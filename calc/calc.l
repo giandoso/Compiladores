@@ -5,9 +5,15 @@ void yyerror(char *);
 %}
 
 %%
+[a-z]    {yylval = *yytext - 'a'; return VAR;}
 [0-9]+   {yylval = atoi(yytext); return NUM;}
 "+"      return MAIS;
 "-"      return MENOS;
+"("      return ABRE;
+")"      return FECHA;
+"="      return ATRIBUI;
+"/"      return BARRA;
+"*"      return VEZES;
 \n       return ENTER;
 [ \t]    ;
 .        yyerror("Erro Léxico");

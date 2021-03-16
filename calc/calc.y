@@ -2,24 +2,42 @@
 #include <stdio.h>
 int yylex(void);
 void yyerror(char *);  
+int valores[26];
 %}
 
 %token NUM
 %token MAIS
 %token MENOS
+%token ABRE
+%token FECHA
+%token ATRIBUI
+%token BARRA
+%token VEZES
+%token VAR
 %token ENTER
 
+
 %start calculo
-%left MAIS MENOS
+
+// Precedência
+%left MAIS MENOS   // associatividade
+%left VEZES BARRA
 
 %%
 
-calculo : calculo expr ENTER { printf("%d\n" , $2); }
+calculo : calculo comando ENTER 
         | ;
 
+comando : expr               { printf("%d\n", $1); }
+        | VAR ATRIBUI expr   { valores[$1] = $3; }
+
 expr : NUM                   { $$ = $1; }
+     | VAR                   { $$ = valores[$1]; }
      | expr MAIS expr        { $$ = $1 + $3; }
      | expr MENOS expr       { $$ = $1 - $3; }
+     | expr BARRA expr       { $$ = $1 / $3; }
+     | expr VEZES expr       { $$ = $1 * $3; }
+     | ABRE expr FECHA       { $$ = $2; }
      ;                       
 
 %%

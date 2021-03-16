@@ -52,7 +52,13 @@ extern int yydebug;
     NUM = 258,
     MAIS = 259,
     MENOS = 260,
-    ENTER = 261
+    ABRE = 261,
+    FECHA = 262,
+    ATRIBUI = 263,
+    BARRA = 264,
+    VEZES = 265,
+    VAR = 266,
+    ENTER = 267
   };
 #endif
 
