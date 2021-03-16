@@ -1,0 +1,10 @@
+programa nome
+  inteiro a b
+inicio
+  escreva "digite o valor de a"
+  leia a
+  escreva "digite o valor de b"
+  leia b
+  escreva "a soma eh"
+  escreva a + b
+fimprograma
