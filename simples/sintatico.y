@@ -139,7 +139,17 @@ repeticao: T_ENQTO
               int r2 = desempilha();  
               log_("DSVS", IntToString(r2)); 
               log_("NADA", IntToString(r1)); }
-         | T_REPITA lista_comandos T_ATE expressao T_FIMREPITA;
+         | T_REPITA lista_comandos 
+            { rotulo++; 
+              log_("NADA", IntToString(rotulo)); 
+              empilha(rotulo); }
+           T_ATE expressao 
+            { rotulo++; 
+              log_("DSVF", IntToString(rotulo)); 
+              empilha(rotulo); }
+           T_FIMREPITA
+
+
 
 selecao: T_SE expressao T_ENTAO
             { rotulo++;
