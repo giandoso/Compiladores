@@ -2,6 +2,12 @@ programa teste
     inteiro a b
 inicio
     leia a
-    b <- a * 4
-    escreva 10 * b
+    enquanto a > 0 faca
+        b <- 1
+        enquanto b < 5 faca
+            escreva a
+            b <- b +1
+        fimenquanto
+        a <- a -1
+    fimenquanto
 fimprograma

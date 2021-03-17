@@ -3,6 +3,7 @@
 int numLinha=1;
 char atomo[80];
 void msg(char *);
+void log_(char *, char *);
 %}
 
 identificador  [a-zA-Z]([a-zA-Z0-9])*
@@ -52,7 +53,7 @@ nao         return T_NAO;
 ")"         return T_FECHA;
 
 inteiro     return T_INTEIRO;
-logico      return T_LOGICO;
+log_ico      return T_LOGICO;
 V           return T_V;
 F           return T_F;
 
