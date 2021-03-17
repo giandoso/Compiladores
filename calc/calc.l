@@ -1,27 +1,29 @@
 %{
+#include "tree.h"
+#define YYSTYPE ptno
 #include "calc.h"
-#include <stdlib.h>
 void yyerror(char *);
 %}
 
 %%
-[a-z]    {yylval = *yytext - 'a'; return VAR;}
-[0-9]+   {yylval = atoi(yytext); return NUM;}
+[a-z]    {
+            yylval = criaNo (VAR, *yytext - 'a'); 
+            return VAR;
+         }
+[A-Z]    {yylval = criaNo(VAR, *yytext - 'A'); return VAR;}
+[0-9]+   {yylval = criaNo(NUM, atoi(yytext)); return NUM;}
 "+"      return MAIS;
 "-"      return MENOS;
 "("      return ABRE;
 ")"      return FECHA;
-"="      return ATRIBUI;
+"="      return IGUAL;
 "/"      return BARRA;
 "*"      return VEZES;
 \n       return ENTER;
 [ \t]    ;
-.        yyerror("Erro Léxico");
+.        yyerror("Simbolo invalido");
 %%
 
 int yywrap(void){
     return 1;
 }
-
-// Comando de compilação: 
-// flex -o lex.c calc.l
