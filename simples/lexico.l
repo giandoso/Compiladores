@@ -10,6 +10,8 @@ numero         [0-9]+
 espaco         [ \t\r]+
 novalinha      [\n]
 
+%x comentario
+
 %%
 
 programa    return T_PROGRAMA;
@@ -54,11 +56,18 @@ logico      return T_LOGICO;
 V           return T_V;
 F           return T_F;
 
-{identificador} {strcpy(atomo, yytext); return T_IDENTIF;}
-{numero}        {strcpy(atomo, yytext); return T_NUMERO;}
-{espaco}        /* nao faz nada */
-{novalinha}     /* nao faz nada */
-.               msg("ERRO - SIMBOLO NAO RECONHECIDO!\n");
+{identificador}  {strcpy(atomo, yytext); return T_IDENTIF;}
+{numero}         {strcpy(atomo, yytext); return T_NUMERO;}
+{espaco}         /* nao faz nada */
+{novalinha}      /* nao faz nada */
+
+"//".*           /* nao faz nada */ 
+"/*"             BEGIN(comentario);
+<comentario>"*/" BEGIN(INITIAL);
+<comentario>.    /* nao faz nada */ 
+<comentario>\n   numLinha++;
+
+.                msg("ERRO - SIMBOLO NAO RECONHECIDO!\n");
 
 %%
 
