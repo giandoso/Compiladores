@@ -18,6 +18,9 @@ int yyerror(char *);
 %token T_ENQTO
 %token T_FACA
 %token T_FIMENQTO
+%token T_REPITA
+%token T_ATE
+%token T_FIMREPITA
 %token T_SE
 %token T_ENTAO
 %token T_SENAO
@@ -39,6 +42,7 @@ int yyerror(char *);
 %token T_FECHA
 %token T_INTEIRO
 %token T_LOGICO
+
 
 %start programa
 
@@ -82,7 +86,8 @@ leitura: T_LEIA T_IDENTIF;
 
 escrita: T_ESCREVA expressao;
 
-repeticao: T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO;
+repeticao: T_ENQTO expressao T_FACA lista_comandos T_FIMENQTO
+         | T_REPITA lista_comandos T_ATE expressao T_FIMREPITA;
 
 selecao: T_SE expressao T_ENTAO lista_comandos T_SENAO lista_comandos T_FIMSE;
 

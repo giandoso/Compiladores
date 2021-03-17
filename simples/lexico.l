@@ -28,6 +28,10 @@ enquanto    return T_ENQTO;
 faca        return T_FACA;
 fimenquanto return T_FIMENQTO;
 
+repita      return T_REPITA;
+ate         return T_ATE;
+fimrepita   return T_FIMREPITA;
+
 "+"         return T_MAIS;
 "-"         return T_MENOS;
 "*"         return T_VEZES;
