@@ -1,17 +1,21 @@
 build: 
 	make limpa
-	make simples
-	make testa
+	make compila
+	make mvs
+	make roda
 
-simples:  lexico.l sintatico.y
+compila:  lexico.l sintatico.y
 		flex -o lexico.c lexico.l
 		bison -v -d sintatico.y -o sintatico.c
-		gcc pilha.c lexico.c sintatico.c -o simples
+		gcc mvs.c -o mvs
+		gcc pilha.c tabela.c lexico.c sintatico.c -o simples
 
 limpa: 
-		rm -f lexico.c sintatico.c sintatico.output sintatico.h simples
+		rm -f mvs lexico.c sintatico.c sintatico.output sintatico.h simples
 
-testa: 
-		./simples < amostras/t1.simples
-		./simples < amostras/comentario.simples
-		./simples < amostras/enquanto.simples
+mvs: 
+		./simples < amostras/t2.simples > t2.mvs
+		cat t2.mvs
+
+roda: 
+		./mvs t2.mvs	

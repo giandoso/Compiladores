@@ -3,12 +3,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "estruturas.h"
+
 int yylex();
 int msg(char *);
 void log_(char *, char *);
 char* IntToString(int);
 void empilha(int);
 int desempilha();
+void insere_simbolo(struct elem_tab_simbolos);
+int busca_simbolo(char *);
+void mostra_tabela();
 int yyerror(char *);
 
 extern char atomo[80];
@@ -77,16 +82,27 @@ variaveis: declaracao_variaveis
          | ;
 
 declaracao_variaveis: tipo lista_variaveis declaracao_variaveis 
-                              { log_("AMEM", IntToString(conta)); } 
+                              { mostra_tabela();
+                                log_("AMEM", IntToString(conta)); } 
                     | tipo lista_variaveis
-                              { log_("AMEM", IntToString(conta)); };
+                              { mostra_tabela();
+                                log_("AMEM", IntToString(conta)); };
 
 tipo: T_LOGICO 
     | T_INTEIRO;
 
-lista_variaveis: T_IDENTIF    { conta++; }
-                 lista_variaveis 
-               | T_IDENTIF    { conta++; } ;
+lista_variaveis: lista_variaveis T_IDENTIF    
+                    { strcpy(elem_tab.id, atomo);
+                      elem_tab.endereco = conta;
+                      insere_simbolo(elem_tab);
+                      mostra_tabela();
+                      conta++; }
+               | T_IDENTIF    
+                      { strcpy(elem_tab.id, atomo);
+                      elem_tab.endereco = conta;
+                      insere_simbolo(elem_tab);
+                      mostra_tabela();
+                      conta++; };
 
 lista_comandos: comando lista_comandos
               | ;
@@ -99,10 +115,13 @@ comando: entrada_saida
 entrada_saida: leitura         
              | escrita;
 
-leitura: T_LEIA                
-            { log_("LEIA", ""); }
-         T_IDENTIF             
-            { log_("ARZG\tx", ""); };
+leitura: T_LEIA T_IDENTIF           
+            { log_("LEIA", ""); 
+              int pos = busca_simbolo(atomo);
+              if(pos == -1){
+                  msg("Variável não declarada");
+              }
+              log_("ARZG", IntToString(TabSimb[pos].endereco)); };
 
 escrita: T_ESCREVA expressao   
             { log_("ESCR", ""); }; 
@@ -123,15 +142,28 @@ repeticao: T_ENQTO
          | T_REPITA lista_comandos T_ATE expressao T_FIMREPITA;
 
 selecao: T_SE expressao T_ENTAO
-            { log_("DSVF\tLx", ""); }
+            { rotulo++;
+              log_("DSVF", IntToString(rotulo));
+              empilha(rotulo); }
          lista_comandos T_SENAO
-            { log_("DSVS\tLy", ""); printf("Lx\tNADA\n");}
+            { int r = desempilha();
+              rotulo++;
+              log_("DSVS", IntToString(rotulo)); 
+              log_("NADA", IntToString(r));
+              empilha(rotulo);}
          lista_comandos T_FIMSE
-            { printf("Ly\tNADA\n"); } 
-         ;
+            { int r = desempilha();
+              log_("NADA", IntToString(r)); };
 
-atribuicao: T_IDENTIF T_ATRIB expressao
-            { log_("ARZG\tx", ""); };
+atribuicao: T_IDENTIF
+            { int pos = busca_simbolo(atomo);
+              if(pos == -1){
+                  msg("Variável não declarada");
+              }
+              empilha(TabSimb[pos].endereco); }
+            T_ATRIB expressao
+            { int end = desempilha();
+              log_("ARZG", IntToString(end)); };
 
 expressao: expressao T_VEZES expressao
             { log_("MULT", ""); }
@@ -154,7 +186,11 @@ expressao: expressao T_VEZES expressao
          | termo; 
 
 termo: T_IDENTIF 
-            { log_("CRVG", atomo); }
+            { int pos = busca_simbolo(atomo);
+              if (pos == -1){
+                  msg("Variável não declarada");
+              }              
+                log_("CRVG", IntToString(TabSimb[pos].endereco)); }
      | T_NUMERO
             { log_("CRCT", atomo); }
      | T_V
@@ -173,13 +209,21 @@ int yyerror(char *s){
 }
 
 int main(void){
-    if(!yyparse()){
-        printf("Programa Ok!\n\n");
-    }
+    yyparse();
 }
 
 void log_(char *s, char *ref){
-    printf("\t%s\t%s\n", s, ref);
+   if(strcmp(s, "NADA") == 0){
+      printf("L%s\t%s\n", ref, s);
+   }else if(strcmp(s, "DSVF") == 0 ||
+      strcmp(s, "DSVS") == 0){
+      printf("\t%s\tL%s\n", s, ref);
+   }else{
+      printf("\t%s\t%s\n", s, ref);
+   }
+   
+   
+   
 }
 
 char* IntToString(int n){
