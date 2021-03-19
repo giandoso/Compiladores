@@ -1,9 +1,17 @@
-programa nome
+programa teste
   inteiro a b
+  logico c
+  inteiro soma total contanomes
+  logico ok
 inicio
   leia a
-  repita
-     escreva a
-     a <- a - 1
-  ate a < 0 fimrepita
+  c <- 10 > 5
+  enquanto a > 0 faca 
+    b <- 1
+    enquanto b < 5 faca
+      escreva a
+      b <- b + 1
+    fimenquanto
+    a <- a - 1
+  fimenquanto
 fimprograma

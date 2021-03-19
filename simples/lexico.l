@@ -53,14 +53,14 @@ nao         return T_NAO;
 ")"         return T_FECHA;
 
 inteiro     return T_INTEIRO;
-log_ico      return T_LOGICO;
+logico      return T_LOGICO;
 V           return T_V;
 F           return T_F;
 
 {identificador}  {strcpy(atomo, yytext); return T_IDENTIF;}
 {numero}         {strcpy(atomo, yytext); return T_NUMERO;}
 {espaco}         /* nao faz nada */
-{novalinha}      /* nao faz nada */
+{novalinha}      numLinha++;
 
 "//".*           /* nao faz nada */ 
 "/*"             BEGIN(comentario);

@@ -6,7 +6,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cd simples/ && make build"
+            "command": "cd simples/ && make -B build"
         }
     ]
 }

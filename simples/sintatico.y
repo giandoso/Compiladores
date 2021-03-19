@@ -4,23 +4,29 @@
 #include <stdlib.h>
 
 #include "estruturas.h"
+#include "tabela.h"
+#include "pilha.h"
 
 int yylex();
 int msg(char *);
+
 void log_(char *, char *);
 char* IntToString(int);
-void empilha(int);
-int desempilha();
-void insere_simbolo(struct elem_tab_simbolos);
-int busca_simbolo(char *);
-void mostra_tabela();
+void verifica_tipo_INT();
+void verifica_tipo_LOG();
+
 int yyerror(char *);
 
 extern char atomo[80];
+extern FILE *yyin;
+extern FILE *yyout;
 
 char str[80];
 int conta = 0;
-int rotulo = 0;
+int rotulo = 10;
+int tipo;
+
+enum {INT, LOG};
 
 %}
 
@@ -79,27 +85,27 @@ programa: cabecalho           { log_("INPP", ""); }
 cabecalho: T_PROGRAMA T_IDENTIF;
 
 variaveis: declaracao_variaveis
+                              { mostra_tabela();
+                                log_("AMEM", IntToString(conta)); }
          | ;
 
-declaracao_variaveis: tipo lista_variaveis declaracao_variaveis 
-                              { mostra_tabela();
-                                log_("AMEM", IntToString(conta)); } 
-                    | tipo lista_variaveis
-                              { mostra_tabela();
-                                log_("AMEM", IntToString(conta)); };
+declaracao_variaveis: tipo lista_variaveis declaracao_variaveis  
+                    | tipo lista_variaveis ;
 
-tipo: T_LOGICO 
-    | T_INTEIRO;
+tipo: T_LOGICO      {tipo = LOG;}
+    | T_INTEIRO     {tipo = INT;};
 
 lista_variaveis: lista_variaveis T_IDENTIF    
                     { strcpy(elem_tab.id, atomo);
                       elem_tab.endereco = conta;
+                      elem_tab.tipo = tipo;
                       insere_simbolo(elem_tab);
                       mostra_tabela();
                       conta++; }
                | T_IDENTIF    
                       { strcpy(elem_tab.id, atomo);
                       elem_tab.endereco = conta;
+                      elem_tab.tipo = tipo;
                       insere_simbolo(elem_tab);
                       mostra_tabela();
                       conta++; };
@@ -124,16 +130,21 @@ leitura: T_LEIA T_IDENTIF
               log_("ARZG", IntToString(TabSimb[pos].endereco)); };
 
 escrita: T_ESCREVA expressao   
-            { log_("ESCR", ""); }; 
+            { log_("ESCR", "");
+              desempilha(); }; 
 
 repeticao: T_ENQTO 
             { rotulo++; 
               log_("NADA", IntToString(rotulo)); 
-              empilha(rotulo); }
+              empilha(rotulo, 'r'); }
            expressao T_FACA 
-            { rotulo++; 
+            { mostra_pilha("Repetição"); 
+              int t1 = desempilha();
+              if(t1 != LOG)
+                  msg("Incompatibilidade de tipos!");
+              rotulo++; 
               log_("DSVF", IntToString(rotulo)); 
-              empilha(rotulo); }
+              empilha(rotulo, 'r'); }
            lista_comandos T_FIMENQTO 
             { int r1 = desempilha(); 
               int r2 = desempilha();  
@@ -142,25 +153,29 @@ repeticao: T_ENQTO
          | T_REPITA lista_comandos 
             { rotulo++; 
               log_("NADA", IntToString(rotulo)); 
-              empilha(rotulo); }
+              empilha(rotulo, 'r'); }
            T_ATE expressao 
             { rotulo++; 
               log_("DSVF", IntToString(rotulo)); 
-              empilha(rotulo); }
-           T_FIMREPITA
+              empilha(rotulo, 'r'); }
+           T_FIMREPITA;
 
 
 
 selecao: T_SE expressao T_ENTAO
-            { rotulo++;
+            { mostra_pilha("Seleção"); 
+              int t1 = desempilha();
+              if(t1 != LOG)
+                  msg("Incompatibilidade de tipos!");
+              rotulo++;
               log_("DSVF", IntToString(rotulo));
-              empilha(rotulo); }
+              empilha(rotulo, 'r'); }
          lista_comandos T_SENAO
             { int r = desempilha();
               rotulo++;
               log_("DSVS", IntToString(rotulo)); 
               log_("NADA", IntToString(r));
-              empilha(rotulo);}
+              empilha(rotulo, 'r');}
          lista_comandos T_FIMSE
             { int r = desempilha();
               log_("NADA", IntToString(r)); };
@@ -170,29 +185,51 @@ atribuicao: T_IDENTIF
               if(pos == -1){
                   msg("Variável não declarada");
               }
-              empilha(TabSimb[pos].endereco); }
+              empilha(TabSimb[pos].endereco, 'e');
+              empilha(TabSimb[pos].tipo, 't'); }
             T_ATRIB expressao
-            { int end = desempilha();
+            { mostra_pilha("Atribuição"); 
+              int texp = desempilha();
+              int tvar = desempilha();
+              int end = desempilha();
+              if(texp != tvar)
+                  msg("Incompatibilidade de tipos!");
               log_("ARZG", IntToString(end)); };
 
 expressao: expressao T_VEZES expressao
-            { log_("MULT", ""); }
+            { verifica_tipo_INT(); 
+              log_("MULT", "");
+              empilha(INT, 't'); }
          | expressao T_DIV expressao
-            { log_("DIVI", ""); }
+            { verifica_tipo_INT(); 
+              log_("DIVI", "");
+              empilha(INT, 't'); }
          | expressao T_MAIS expressao
-            { log_("SOMA", ""); }
+            { verifica_tipo_INT(); 
+              log_("SOMA", "");
+              empilha(INT, 't'); }
          | expressao T_MENOS expressao
-            { log_("SUBT", ""); }
+            { verifica_tipo_INT(); 
+              log_("SUBT", "");
+              empilha(INT, 't'); }
          | expressao T_MAIOR expressao
-            { log_("CMMA", ""); }
+            { verifica_tipo_INT(); 
+              log_("CMMA", "");
+              empilha(LOG, 't'); }
          | expressao T_MENOR expressao
-            { log_("CMME", ""); }
+            { verifica_tipo_INT(); 
+              log_("CMME", "");
+              empilha(LOG, 't'); }
          | expressao T_IGUAL expressao
-            { log_("CMIG", ""); }
+            { verifica_tipo_INT(); 
+              log_("CMIG", "");
+              empilha(LOG, 't'); }
          | expressao T_E expressao
-            { log_("CONJ", ""); }
+            { verifica_tipo_LOG(); 
+              log_("CONJ", ""); }
          | expressao T_OU expressao
-            { log_("DISJ", ""); }
+            { verifica_tipo_LOG(); 
+              log_("DISJ", ""); }
          | termo; 
 
 termo: T_IDENTIF 
@@ -200,15 +237,21 @@ termo: T_IDENTIF
               if (pos == -1){
                   msg("Variável não declarada");
               }              
-                log_("CRVG", IntToString(TabSimb[pos].endereco)); }
+              log_("CRVG", IntToString(TabSimb[pos].endereco));
+              empilha(TabSimb[pos].tipo, 't');}
      | T_NUMERO
-            { log_("CRCT", atomo); }
+            { log_("CRCT", atomo); 
+              empilha(INT, 't'); }
      | T_V
-            { log_("CRCT\t1", ""); }
+            { log_("CRCT\t1", ""); 
+              empilha(LOG, 't'); }
      | T_F
-            { log_("CRCT\t0", ""); }
+            { log_("CRCT\t0", ""); 
+              empilha(LOG, 't'); }
      | T_NAO termo
-            { log_("NEGA", ""); }
+            { int t1 = desempilha();
+              if(t1 != LOG) msg("Incompatibilidade de tipo!");
+              log_("NEGA", ""); }
      | T_ABRE expressao T_FECHA;
 
 
@@ -218,24 +261,67 @@ int yyerror(char *s){
     msg("ERRO SINTATICO");
 }
 
-int main(void){
-    yyparse();
+int main(int argc, char* argv[]){
+   char *p, nameIn[100], nameOut[100];
+
+   argv++;
+   if (argc < 1)
+   {
+      puts("\nCompilador Simples");
+      puts("Uso: ./simples <nomedoarquivo>[.simples]\n\n");
+      exit(10);
+   }
+   p = strstr(argv[0], ".simples");
+   if(p) *p=0;
+   strcpy(nameIn, argv[0]);
+   strcat(nameIn, ".simples");
+   strcpy(nameOut, argv[0]);
+   strcat(nameOut, ".mvs");
+
+   puts(nameIn);
+   puts(nameOut);
+
+   yyin = fopen(nameIn, "rt");
+   if(!yyin){
+      puts("Programa fonte não encontrado!");
+      exit(20);
+   }
+
+   yyout = fopen(nameOut, "wt");
+   if(!yyparse()){
+      printf("\nPrograma Ok!\n\n");
+   }
 }
 
 void log_(char *s, char *ref){
    if(strcmp(s, "NADA") == 0){
-      printf("L%s\t%s\n", ref, s);
+      fprintf(yyout, "L%s\t%s\n", ref, s);
    }else if(strcmp(s, "DSVF") == 0 ||
       strcmp(s, "DSVS") == 0){
-      printf("\t%s\tL%s\n", s, ref);
+      fprintf(yyout, "\t%s\tL%s\n", s, ref);
    }else{
-      printf("\t%s\t%s\n", s, ref);
-   }
-   
-   
-   
+      fprintf(yyout, "\t%s\t%s\n", s, ref);
+   } 
 }
 
+void verifica_tipo_INT(){
+   int t1 = desempilha();
+   int t2 = desempilha(); 
+
+   if(t1 != INT || t2 != INT){
+      msg("Incompatibilidade de tipos!");
+   }
+}
+
+void verifica_tipo_LOG(){
+   int t1 = desempilha();
+   int t2 = desempilha(); 
+
+   if(t1 != LOG || t2 != LOG){
+      msg("Incompatibilidade de tipos!");
+   }
+   empilha(LOG, 't');
+}
 char* IntToString(int n){
     sprintf(str, "%d", n);
     return str;
