@@ -63,6 +63,11 @@ enum {INT, LOG};
 %token T_FECHA
 %token T_INTEIRO
 %token T_LOGICO
+%token T_FUNC
+%token T_FIMFUNC
+%token T_PROC
+%token T_FIMPROC
+%token T_REF
 
 
 %start programa

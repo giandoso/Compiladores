@@ -19,6 +19,12 @@ programa    return T_PROGRAMA;
 inicio      return T_INICIO;
 fimprograma return T_FIM;
 
+func        return T_FUNC;
+fimfunc     return T_FIMFUNC;
+proc        return T_PROC;
+fimproc     return T_FIMPROC;
+ref         return T_REF;
+
 leia        return T_LEIA;
 escreva     return T_ESCREVA;
 
