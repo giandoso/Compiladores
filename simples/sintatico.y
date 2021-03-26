@@ -83,6 +83,7 @@ enum {INT, LOG};
 
 programa: cabecalho           { log_("INPP", ""); } 
           variaveis
+          rotinas
           T_INICIO 
             lista_comandos 
           T_FIM               { log_("FIMP", ""); };
@@ -115,13 +116,35 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       mostra_tabela();
                       conta++; };
 
+rotinas: lista_rotinas
+       | ;
+
+lista_rotinas: lista_rotinas rotina
+             | rotina;
+
+rotina: funcao
+      | procedimento;
+
+funcao: T_FUNC tipo identificador T_ABRE lista_parametros T_FECHA variaveis T_INICIO lista_comandos T_FIMFUNC;
+
+procedimento: T_PROC identificador T_ABRE lista_parametros T_FECHA variaveis T_INICIO lista_comandos T_FIMPROC;
+
+lista_parametros: parametro lista_parametros
+                | ;
+
+parametro: mecanismo tipo identificador;
+
+mecanismo: T_REF
+         | ;
+
 lista_comandos: comando lista_comandos
               | ;
 
 comando: entrada_saida
        | repeticao
        | selecao
-       | atribuicao;
+       | atribuicao
+       | chamada_procedimento;
 
 entrada_saida: leitura         
              | escrita;
@@ -201,6 +224,13 @@ atribuicao: T_IDENTIF
                   msg("Incompatibilidade de tipos!");
               log_("ARZG", IntToString(end)); };
 
+chamada_procedimento: identificador T_ABRE lista_argumentos T_FECHA;
+
+lista_argumentos: lista_argumentos argumento
+                | ;
+
+argumento: expressao;
+
 expressao: expressao T_VEZES expressao
             { verifica_tipo_INT(); 
               log_("MULT", "");
@@ -237,7 +267,10 @@ expressao: expressao T_VEZES expressao
               log_("DISJ", ""); }
          | termo; 
 
-termo: T_IDENTIF 
+chamada: T_ABRE lista_argumentos T_FECHA
+       | ;
+
+termo: T_IDENTIF chamada
             { int pos = busca_simbolo(atomo);
               if (pos == -1){
                   msg("Variável não declarada");
