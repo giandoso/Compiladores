@@ -8,12 +8,12 @@ limpa:
 		rm -f mvs lexico.c sintatico.c sintatico.output sintatico.h simples
 
 mvs: sintatico.y
-		./simples amostras/t2.simples
-		cat amostras/t2.mvs
+		./simples amostras/t6.simples
+		cat amostras/t6.mvs
 
 
 build: 
 	make compila
-	./simples amostras/t2.simples
-	cat amostras/t2.mvs
-	./mvs amostras/t2.mvs	
+	./simples amostras/t6.simples
+	cat amostras/t6.mvs
+	./mvs amostras/t6.mvs	

@@ -14,6 +14,7 @@ void log_(char *, char *);
 char* IntToString(int);
 void verifica_tipo_INT();
 void verifica_tipo_LOG();
+void popula_deslocamento();
 
 int yyerror(char *);
 
@@ -25,6 +26,9 @@ char str[80];
 int conta = 0;
 int rotulo = 10;
 int tipo;
+int mecanismo;
+char escopo;
+
 int ehVariavel;
 int ehReferencia;
 
@@ -83,7 +87,7 @@ enum {INT = 1, LOG, VAL=10, REF};
 
 %%
 
-programa: cabecalho           { log_("INPP", ""); } 
+programa: cabecalho           { log_("INPP", ""); escopo = 'G';} 
           variaveis
           rotinas
           T_INICIO 
@@ -93,7 +97,8 @@ programa: cabecalho           { log_("INPP", ""); }
 cabecalho: T_PROGRAMA T_IDENTIF;
 
 variaveis: declaracao_variaveis
-                              { mostra_tabela();
+                              { puts("variaveis");
+                                mostra_tabela();
                                 log_("AMEM", IntToString(conta)); }
          | ;
 
@@ -101,45 +106,78 @@ declaracao_variaveis: tipo lista_variaveis declaracao_variaveis
                     | tipo lista_variaveis ;
 
 tipo: T_LOGICO      {tipo = LOG;}
-    | T_INTEIRO     {tipo = INT;};
+    | T_INTEIRO     {tipo = INT;} ;
 
 lista_variaveis: lista_variaveis T_IDENTIF    
                     { strcpy(elem_tab.id, atomo);
                       elem_tab.endereco = conta;
                       elem_tab.tipo = tipo;
+                      elem_tab.mecanismo = -1;
+                      elem_tab.rotulo = -1;
+                      elem_tab.escopo = escopo;
+                      elem_tab.cat = 'V';
+                      elem_tab.npar = 0; // TODO: 
                       insere_simbolo(elem_tab);
+                      puts("lista_variaveis T_IDENTIF");
                       mostra_tabela();
                       conta++; }
                | T_IDENTIF    
                       { strcpy(elem_tab.id, atomo);
                       elem_tab.endereco = conta;
                       elem_tab.tipo = tipo;
+                      elem_tab.mecanismo = -1;
+                      elem_tab.rotulo = -1;
+                      elem_tab.escopo = escopo;
+                      elem_tab.cat = 'V';
+                      elem_tab.npar = 0; // TODO: 
                       insere_simbolo(elem_tab);
+                      puts("T_IDENTIF");
                       mostra_tabela();
                       conta++; };
 
-rotinas: lista_funcoes { // calculo do L0
-                         log_("DSVS", "")} 
-       |               { // calculo do L0
-                         log_("NADA", "")};
+rotinas: { //rotulo++;
+           log_("DSVS", IntToString(rotulo));
+           empilha(rotulo, 'r'); }
+         lista_funcoes 
+         { int r = desempilha();
+           log_("NADA", IntToString(r)); } 
+       | ; 
 
 lista_funcoes: funcao lista_funcoes
              | funcao;
 
 funcao: T_FUNC tipo identificador 
          { // insere nome na tabela
-           log_("ENSP", "")
+           strcpy(elem_tab.id, atomo);
+           elem_tab.endereco = conta;
+           elem_tab.tipo = tipo;
+           elem_tab.mecanismo = -1;
+           elem_tab.rotulo = -1;
+           elem_tab.escopo = escopo;
+           elem_tab.cat = 'F';
+           elem_tab.npar = 0; 
+           insere_simbolo(elem_tab);
+           puts("funcao");
+           mostra_tabela();
+           conta++; 
+           rotulo++;
+           log_("ENSP", IntToString(rotulo));
+           empilha(rotulo, 'r');
            // mudar o escopo para local
+           escopo = 'L';
          }
         T_ABRE
         lista_parametros T_FECHA
          { //Ajustar deslocamentos e incluir lista de parametros
+           popula_deslocamento();
          }
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
          {  //remover variaveis locais
             //mudar o escopo para global
-            log_("RTSP", "")
+            int r = desempilha();
+            log_("RTSP", IntToString(r));
+            escopo = 'G';
          }
         ;
 
@@ -148,16 +186,22 @@ lista_parametros: lista_parametros parametro
 
 parametro: mecanismo tipo identificador
             { // incluir o parametros na tabela de simbolos
+               strcpy(elem_tab.id, atomo);
+               elem_tab.endereco = conta;
+               elem_tab.tipo = tipo;
+               elem_tab.mecanismo = mecanismo;
+               elem_tab.rotulo = -1;
+               elem_tab.escopo = escopo;
+               elem_tab.cat = 'P';
+               elem_tab.npar = 0; 
+               insere_simbolo(elem_tab);
+               puts("parametro");
+               mostra_tabela();
+               conta++;
             };
 
-mecanismo: T_REF 
-            {
-               // mecanismo = REF
-            }
-         | 
-            {
-               // mecanismo = VAL
-            };
+mecanismo: T_REF { mecanismo = REF; }
+         |       { mecanismo = VAL; };
 
 lista_comandos: comando lista_comandos
               | ;
@@ -166,18 +210,19 @@ comando: entrada_saida
        | repeticao
        | selecao
        | atribuicao
-       | chamada_procedimento;
+       | chamada_funcao;
 
 entrada_saida: leitura         
              | escrita;
 
 identificador: T_IDENTIF
                {
-                  int i = busca_simbolo(atomo);
-                  if( i== -1 )
-                     msg("Identificador desconhecido!");
-                  empilha(i, 'i'); 
+                  //int i = busca_simbolo(atomo);
+                  //if( i== -1 )
+                  //   msg("Identificador desconhecido!");
+                  //empilha(i, 'i'); 
                   // empilhar a posição do id na tabsimb
+                  //empilha(TabSimb[i].endereco, 'e');
                };
 
 leitura: T_LEIA T_IDENTIF           
@@ -329,7 +374,8 @@ termo: identificador chamada
                   msg("Variável não declarada");
               }              
               log_("CRVG", IntToString(TabSimb[pos].endereco));
-              empilha(TabSimb[pos].tipo, 't');}
+              empilha(TabSimb[pos].tipo, 't');
+              }
      | T_NUMERO
             { log_("CRCT", atomo); 
               empilha(INT, 't'); }
@@ -385,10 +431,12 @@ int main(int argc, char* argv[]){
 }
 
 void log_(char *s, char *ref){
-   if(strcmp(s, "NADA") == 0){
+   if(strcmp(s, "NADA") == 0 ||
+      strcmp(s, "ENSP") == 0){
       fprintf(yyout, "L%s\t%s\n", ref, s);
    }else if(strcmp(s, "DSVF") == 0 ||
-      strcmp(s, "DSVS") == 0){
+            strcmp(s, "DSVS") == 0 ||
+            strcmp(s, "RTSP") == 0){
       fprintf(yyout, "\t%s\tL%s\n", s, ref);
    }else{
       fprintf(yyout, "\t%s\t%s\n", s, ref);

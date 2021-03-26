@@ -16,7 +16,6 @@ struct no{
 struct elem_tab_simbolos{
     char id[30];
     int endereco; // TODO: O que fazer com o endereço? 
-    int deslocamento;
     int tipo;
     int mecanismo;
     int rotulo;
