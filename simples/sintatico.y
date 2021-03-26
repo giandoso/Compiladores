@@ -26,7 +26,7 @@ int conta = 0;
 int rotulo = 10;
 int tipo;
 
-enum {INT, LOG};
+enum {INT = 1, LOG, VAL=10, REF};
 
 %}
 
