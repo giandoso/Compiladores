@@ -1,0 +1,14 @@
+programa questao5
+  func inteiro mdc (inteiro x inteiro y)
+  inicio
+     se x > y
+        entao mdc <- mdc ( x - y y)
+        senao se x < y
+                 entao mdc <- mdc (x  y - x)
+                 senao mdc <- x
+              fimse
+     fimse
+  fimfunc
+inicio
+  escreva mdc (15 9)
+fimprograma

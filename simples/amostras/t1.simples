@@ -1,13 +1,21 @@
+/*
+ * Primeiro programa de teste
+ */
 programa teste
-    inteiro a b
+  inteiro a b // variaveis declaradas
+  logico c d nome qualquer
 inicio
-    leia a
-    enquanto a > 0 faca
-        b <- 1
-        enquanto b < 5 faca
-            escreva a
-            b <- b +1
-        fimenquanto
-        a <- a -1
-    fimenquanto
+  leia a   // leitura
+  // repeticao
+  enquanto a > 0 faca
+     b <- 1
+     enquanto b < 5 faca
+       escreva a
+       b <- b + 1
+     fimenquanto
+     se a > 3 
+        entao a <- a - 1
+        senao a <- a - 2
+     fimse
+  fimenquanto 
 fimprograma

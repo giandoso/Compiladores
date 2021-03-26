@@ -1,0 +1,9 @@
+programa repete
+  inteiro a
+inicio 
+  leia a
+  enquanto nao (a < 0) faca
+     escreva a
+     a <- a - 1
+  fimenquanto
+fimprograma

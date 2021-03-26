@@ -1,0 +1,33 @@
+programa testafuncao1
+  inteiro x y z
+  logico a b c
+
+  func inteiro fazer (inteiro x ref inteiro y)
+    inteiro a b
+    logico c d
+    inteiro g
+  inicio
+     se (x > 10)
+        entao fazer <- 2 * x
+        senao fazer <- 10 + x
+     fimse
+  fimfunc
+
+  func logico maiorvalor (inteiro a ref inteiro b ref logico c ref logico d)
+    inteiro x y z
+  inicio
+     maiorvalor <- a > b
+     c <- V
+     d <- F
+  fimfunc
+
+inicio
+  leia x
+  y <- 10
+  escreva fazer(fazer(fazer(x y) y) y)
+  a <- maiorvalor (x y b c)
+  se a e b e nao c
+     entao escreva 100
+     senao escreva 200
+  fimse
+fimprograma

@@ -1,9 +1,0 @@
-programa nome
-  inteiro a b
-inicio
-  leia a
-  repita
-     escreva a
-     a <- a - 1
-  ate a < 0 fimrepita
-fimprograma

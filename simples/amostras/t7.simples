@@ -1,0 +1,14 @@
+programa fibonacci
+  inteiro n
+  func inteiro fib (inteiro n)
+  inicio
+    se n > 1
+       entao fib <- fib(n-1) + fib(n-2)
+       senao fib <- 1
+    fimse
+  fimfunc
+
+inicio
+   leia n
+   escreva fib(n)
+fimprograma

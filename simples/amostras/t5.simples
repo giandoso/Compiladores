@@ -1,0 +1,19 @@
+programa referencia
+   inteiro x
+   
+   func logico muda (ref inteiro a)
+   inicio
+      se a > 10
+         entao a <- 2 * a
+               muda <- V
+         senao muda <- F 
+      fimse
+   fimfunc
+
+inicio
+   leia x
+   se muda (x)
+      entao escreva x
+      senao
+   fimse
+fimprograma

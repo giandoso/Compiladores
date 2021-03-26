@@ -1,0 +1,14 @@
+programa teste8
+  inteiro a
+  func inteiro f1 (ref inteiro b)
+  inicio
+     b <- 5
+     f1 <- 10
+  fimfunc
+  func inteiro f2 (ref inteiro c)
+  inicio
+    f2 <- f1 (c)
+  fimfunc
+inicio
+  escreva f2 (a) + a
+fimprograma

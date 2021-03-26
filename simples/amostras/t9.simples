@@ -1,0 +1,10 @@
+programa testafuncao
+
+    func inteiro g (inteiro p1 inteiro p2 inteiro p3)
+    inicio
+        g <- p1 + p2 + p3
+    fimfunc
+
+inicio
+    escreva g ( 10 20 30 )
+fimprograma
