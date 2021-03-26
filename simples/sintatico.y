@@ -25,6 +25,8 @@ char str[80];
 int conta = 0;
 int rotulo = 10;
 int tipo;
+int ehVariavel;
+int ehReferencia;
 
 enum {INT = 1, LOG, VAL=10, REF};
 
@@ -116,26 +118,46 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       mostra_tabela();
                       conta++; };
 
-rotinas: lista_rotinas
-       | ;
+rotinas: lista_funcoes { // calculo do L0
+                         log_("DSVS", "")} 
+       |               { // calculo do L0
+                         log_("NADA", "")};
 
-lista_rotinas: lista_rotinas rotina
-             | rotina;
+lista_funcoes: funcao lista_funcoes
+             | funcao;
 
-rotina: funcao
-      | procedimento;
+funcao: T_FUNC tipo identificador 
+         { // insere nome na tabela
+           log_("ENSP", "")
+           // mudar o escopo para local
+         }
+        T_ABRE
+        lista_parametros T_FECHA
+         { //Ajustar deslocamentos e incluir lista de parametros
+         }
+        variaveis
+        T_INICIO lista_comandos T_FIMFUNC
+         {  //remover variaveis locais
+            //mudar o escopo para global
+            log_("RTSP", "")
+         }
+        ;
 
-funcao: T_FUNC tipo identificador T_ABRE lista_parametros T_FECHA variaveis T_INICIO lista_comandos T_FIMFUNC;
-
-procedimento: T_PROC identificador T_ABRE lista_parametros T_FECHA variaveis T_INICIO lista_comandos T_FIMPROC;
-
-lista_parametros: parametro lista_parametros
+lista_parametros: lista_parametros parametro 
                 | ;
 
-parametro: mecanismo tipo identificador;
+parametro: mecanismo tipo identificador
+            { // incluir o parametros na tabela de simbolos
+            };
 
-mecanismo: T_REF
-         | ;
+mecanismo: T_REF 
+            {
+               // mecanismo = REF
+            }
+         | 
+            {
+               // mecanismo = VAL
+            };
 
 lista_comandos: comando lista_comandos
               | ;
@@ -149,8 +171,20 @@ comando: entrada_saida
 entrada_saida: leitura         
              | escrita;
 
+identificador: T_IDENTIF
+               {
+                  int i = busca_simbolo(atomo);
+                  if( i== -1 )
+                     msg("Identificador desconhecido!");
+                  empilha(i, 'i'); 
+                  // empilhar a posição do id na tabsimb
+               };
+
 leitura: T_LEIA T_IDENTIF           
-            { log_("LEIA", ""); 
+            { // gerar ARMI se a leitura eh para um parametro por referencia
+              // gerar ARZL para parametro por valor ou variavel local
+              // gerar ARZG para variavel global;
+              log_("LEIA", ""); 
               int pos = busca_simbolo(atomo);
               if(pos == -1){
                   msg("Variável não declarada");
@@ -216,7 +250,11 @@ atribuicao: T_IDENTIF
               empilha(TabSimb[pos].endereco, 'e');
               empilha(TabSimb[pos].tipo, 't'); }
             T_ATRIB expressao
-            { mostra_pilha("Atribuição"); 
+            { // gerar ARMI se a atribuicao eh um parametro por referencia
+              // gerar ARZL para parametro por valor ou variavel local ou nome de funcao
+              // gerar ARZG para variavel local
+
+              mostra_pilha("Atribuição"); 
               int texp = desempilha();
               int tvar = desempilha();
               int end = desempilha();
@@ -224,12 +262,16 @@ atribuicao: T_IDENTIF
                   msg("Incompatibilidade de tipos!");
               log_("ARZG", IntToString(end)); };
 
-chamada_procedimento: identificador T_ABRE lista_argumentos T_FECHA;
+chamada_funcao: T_IDENTIF T_ABRE lista_argumentos T_FECHA;
 
 lista_argumentos: lista_argumentos argumento
-                | ;
+                | argumento;
 
-argumento: expressao;
+argumento: expressao
+         {
+            // comparar tipo e categoria do argumento com o parametro
+            // (somente variaveis podem ser passadas por referencia)
+         };
 
 expressao: expressao T_VEZES expressao
             { verifica_tipo_INT(); 
@@ -267,11 +309,22 @@ expressao: expressao T_VEZES expressao
               log_("DISJ", ""); }
          | termo; 
 
-chamada: T_ABRE lista_argumentos T_FECHA
+chamada: T_ABRE 
+         { // gerar AMEM 1 
+         }
+         lista_argumentos T_FECHA
+         { // Gerar SVCP e DSVS            
+         }
        | ;
 
-termo: T_IDENTIF chamada
-            { int pos = busca_simbolo(atomo);
+termo: identificador chamada
+            { // gerar CRCG - Se a variavel é global
+              // gerar CREG - Se a variavel é global e a passagem por referencia 
+              // gerar CREL - Se a variavel é local e a passagem por referencia
+              // gerar CRVL - Se a variavel é local e a passagem por valor ou 
+              //            - Se a variavel é por referencia e a passagem por referencia (?)
+              // gerar CRVI - Se a variavel eh por referencia e a passagem por valor 
+              int pos = busca_simbolo(atomo);
               if (pos == -1){
                   msg("Variável não declarada");
               }              
