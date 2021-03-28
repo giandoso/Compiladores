@@ -15,7 +15,7 @@ char* IntToString(int);
 void verifica_tipo_INT();
 void verifica_tipo_LOG();
 int popula_deslocamento();
-void remove_variaveis_locais(int);
+void remove_variaveis_locais(int, int);
 PtNo insere(PtNo, int, int);
 
 int yyerror(char *);
@@ -32,6 +32,8 @@ int mecanismo;
 char escopo;
 int categoria;
 int npar;
+int nvar_l;
+int conta_l;
 PtNo parametros = NULL;
 
 int ehVariavel;
@@ -105,7 +107,8 @@ variaveis: declaracao_variaveis
                               { puts("variaveis");
                                 categoria = 'V';
                                 mostra_tabela();
-                                log_("AMEM", IntToString(conta)); }
+                                char c = escopo == 'G' ? conta : conta_l;
+                                log_("AMEM", IntToString(c)); }
          | ;
 
 declaracao_variaveis: tipo lista_variaveis declaracao_variaveis  
@@ -116,7 +119,7 @@ tipo: T_LOGICO      {tipo = LOG;}
 
 lista_variaveis: lista_variaveis T_IDENTIF    
                     { strcpy(elem_tab.id, atomo);
-                      elem_tab.endereco = conta;
+                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
                       elem_tab.tipo = tipo;
                       elem_tab.mecanismo = -1;
                       elem_tab.rotulo = -1;
@@ -126,10 +129,10 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       insere_simbolo(elem_tab);
                       puts("lista_variaveis T_IDENTIF");
                       mostra_tabela();
-                      conta++; }
+                      escopo == 'G' ? conta++ : conta_l++; }
                | T_IDENTIF    
                       { strcpy(elem_tab.id, atomo);
-                      elem_tab.endereco = conta;
+                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
                       elem_tab.tipo = tipo;
                       elem_tab.mecanismo = -1;
                       elem_tab.rotulo = -1;
@@ -139,7 +142,7 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       insere_simbolo(elem_tab);
                       puts("T_IDENTIF");
                       mostra_tabela();
-                      conta++; };
+                      escopo == 'G' ? conta++ : conta_l++; };
 
 rotinas: { rotulo++;
            categoria = 'F';
@@ -174,17 +177,18 @@ funcao: T_FUNC tipo identificador
            escopo = 'L';
            parametros = NULL;
            npar = 0; 
+           nvar_l = 0;
+           conta_l = 0;
          }
         T_ABRE
         lista_parametros T_FECHA
          { //Ajustar deslocamentos e incluir lista de parametros
            npar = popula_deslocamento(parametros);
-
          }
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
          {  //remover variaveis locais
-            remove_variaveis_locais(npar);
+            remove_variaveis_locais(npar, conta_l);
             //mudar o escopo para global
             log_("RTSP", IntToString(npar));
             escopo = 'G';
@@ -261,7 +265,6 @@ leitura: T_LEIA T_IDENTIF
                      msg("Variável não declarada");
                   log_("ARZG", IntToString(TabSimb[pos].endereco));
               }
-              
               };
               
 

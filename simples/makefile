@@ -16,4 +16,5 @@ roda:
 build: 
 	make compila
 	./simples amostras/t6.simples
+	cat amostras/t6.mvs
 	
