@@ -188,7 +188,9 @@ funcao: T_FUNC tipo identificador
          {  //remover variaveis locais
             remove_variaveis_locais(npar, conta_l);
             //mudar o escopo para global
+            log_("DMEM", IntToString(conta_l));
             log_("RTSP", IntToString(npar));
+            int r = desempilha();
             escopo = 'G';
          }
         ;
