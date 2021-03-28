@@ -26,13 +26,12 @@ extern FILE *yyout;
 
 char str[80];
 int conta = 0;
-int rotulo = 10;
+int rotulo = -1;
 int tipo;
 int mecanismo;
 char escopo;
 int categoria;
 int npar;
-int nvar_l;
 int conta_l;
 PtNo parametros = NULL;
 
@@ -158,26 +157,25 @@ lista_funcoes: funcao lista_funcoes
 
 funcao: T_FUNC tipo identificador 
          { // insere nome na tabela
+           rotulo++;
            strcpy(elem_tab.id, atomo);
            elem_tab.endereco = conta;
            elem_tab.tipo = tipo;
            elem_tab.mecanismo = -1;
-           elem_tab.rotulo = -1;
+           elem_tab.rotulo = rotulo;
            elem_tab.escopo = escopo;
            elem_tab.cat = categoria;
            elem_tab.npar = 0; 
            insere_simbolo(elem_tab);
            puts("funcao");
            mostra_tabela();
-           conta++; 
-           rotulo++;
            log_("ENSP", IntToString(rotulo));
            empilha(rotulo, 'r');
+           // conta++ (?)
            // mudar o escopo para local
            escopo = 'L';
            parametros = NULL;
            npar = 0; 
-           nvar_l = 0;
            conta_l = 0;
          }
         T_ABRE
@@ -396,15 +394,7 @@ expressao: expressao T_VEZES expressao
               log_("DISJ", ""); }
          | termo; 
 
-chamada: T_ABRE 
-         { // gerar AMEM 1 
-         }
-         lista_argumentos T_FECHA
-         { // Gerar SVCP e DSVS            
-         }
-       | ;
-
-termo: identificador chamada
+termo: identificador
             { // gerar CRCG - Se a variavel é global
                if(escopo == 'G' && mecanismo == VAL){
                   int pos = busca_simbolo(atomo, escopo);
