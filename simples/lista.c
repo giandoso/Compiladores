@@ -4,18 +4,6 @@
 
 #include "estruturas.h"
 
-void mostraLista(PtNo L){
-	printf("[");
-	while(L){
-		printf("%d | %d", L->tipo, L->mec);
-		L=L->prox;
-		if(L){
-			printf(", ");
-		}	
-	}
-		printf("]\n");
-}
-
 PtNo insere(PtNo L, int tipo, int mec){
 	PtNo aux, ant, p;
 	p=(PtNo)malloc(sizeof(struct no));

@@ -11,9 +11,9 @@ mvs: sintatico.y
 		./simples amostras/t6.simples
 		cat amostras/t6.mvs
 
-
+roda: 
+	./mvs amostras/t6.mvs	
 build: 
 	make compila
 	./simples amostras/t6.simples
-	cat amostras/t6.mvs
-	./mvs amostras/t6.mvs	
+	

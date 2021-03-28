@@ -2,7 +2,7 @@ programa testafatorial
   inteiro n
   inteiro a
 
-  func inteiro fatorial (inteiro n)
+  func inteiro fatorial (inteiro n logico a logico b)
   inicio
     leia n
   fimfunc

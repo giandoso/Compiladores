@@ -15,6 +15,7 @@ char* IntToString(int);
 void verifica_tipo_INT();
 void verifica_tipo_LOG();
 void popula_deslocamento();
+PtNo insere(PtNo, int, int);
 
 int yyerror(char *);
 
@@ -28,6 +29,7 @@ int rotulo = 10;
 int tipo;
 int mecanismo;
 char escopo;
+PtNo parametros = NULL;
 
 int ehVariavel;
 int ehReferencia;
@@ -165,11 +167,13 @@ funcao: T_FUNC tipo identificador
            empilha(rotulo, 'r');
            // mudar o escopo para local
            escopo = 'L';
+           parametros = NULL;
          }
         T_ABRE
         lista_parametros T_FECHA
          { //Ajustar deslocamentos e incluir lista de parametros
-           popula_deslocamento();
+           popula_deslocamento(parametros);
+
          }
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
@@ -197,6 +201,7 @@ parametro: mecanismo tipo identificador
                insere_simbolo(elem_tab);
                puts("parametro");
                mostra_tabela();
+               parametros = insere(parametros, tipo, mecanismo);
                conta++;
             };
 

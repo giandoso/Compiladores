@@ -48,20 +48,35 @@ void insere_simbolo(struct elem_tab_simbolos elem){
     pos_tab++;
 }
 
+void mostra_lista(PtNo L){
+	printf("[ ");
+	while(L){
+		printf("{%d | %d}", L->tipo, L->mec);
+		L=L->prox;
+		if(L){
+			printf(" -> ");
+		}	
+	}
+		printf(" ]");
+}
+
 void mostra_tabela(){
     int i = 0;
     int ligado = 1; // ligar debug aqui, mudando para 1
     if(ligado == 1){
         puts("Tabela de simbolos");
-        printf("\n%30s | %s | %s | %s | %s | %s | %s | %s", "ID", "END", "TIP", "MEC", "ROT", "ESC", "CAT", "NPAR");
+        printf("\n%30s | %s | %s | %s | %s | %s | %s | %s | %s", "ID", "END", "TIP", "MEC", "ROT", "ESC", "CAT", "NPAR", "LPAR");
         for(i = 0; i < pos_tab ; i++){
-            printf("\n%30s | %3d | %3d | %3d | %3d | %3c | %3c | %3d", TabSimb[i].id, TabSimb[i].endereco, TabSimb[i].tipo, TabSimb[i].mecanismo, TabSimb[i].rotulo, TabSimb[i].escopo, TabSimb[i].cat, TabSimb[i].npar);
+            printf("\n%30s | %3d | %3d | %3d | %3d | %3c | %3c | %3d  | ", TabSimb[i].id, TabSimb[i].endereco, TabSimb[i].tipo, TabSimb[i].mecanismo, TabSimb[i].rotulo, TabSimb[i].escopo, TabSimb[i].cat, TabSimb[i].npar);
+            if(TabSimb[i].listapar != NULL){
+                mostra_lista(TabSimb[i].listapar);
+            }
         }
         printf("\n\n");
     }
 }
 
-void popula_deslocamento(){
+void popula_deslocamento(PtNo lista){
     int i = pos_tab - 1;
     int start = -3;
     int npar = 0;
@@ -73,5 +88,7 @@ void popula_deslocamento(){
     }
     TabSimb[i].endereco = start;
     TabSimb[i].npar = npar;
+    TabSimb[i].listapar = lista;
     mostra_tabela();
 }
+
