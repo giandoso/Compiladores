@@ -104,7 +104,7 @@ cabecalho: T_PROGRAMA T_IDENTIF;
 
 variaveis: declaracao_variaveis
                               { puts("variaveis");
-                                categoria = 'V';
+                              //   puts("CATEGORIA = V");
                                 mostra_tabela();
                                 char c = escopo == 'G' ? conta : conta_l;
                                 log_("AMEM", IntToString(c)); }
@@ -117,7 +117,8 @@ tipo: T_LOGICO      {tipo = LOG;}
     | T_INTEIRO     {tipo = INT;} ;
 
 lista_variaveis: lista_variaveis T_IDENTIF    
-                  { strcpy(elem_tab.id, atomo);
+                  { categoria = 'V';
+                     strcpy(elem_tab.id, atomo);
                      elem_tab.hash = conta;
                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
                      elem_tab.tipo = tipo;
@@ -132,14 +133,15 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      if(escopo == 'L') conta_l++;
                      conta++; }
                | T_IDENTIF    
-                  { strcpy(elem_tab.id, atomo);
+                  { categoria = 'V';
+                     strcpy(elem_tab.id, atomo);
                      elem_tab.hash = conta;
                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
                      elem_tab.tipo = tipo;
                      elem_tab.mecanismo = -1;
                      elem_tab.rotulo = -1;
                      elem_tab.escopo = escopo;
-                     elem_tab.cat = 'V';
+                     elem_tab.cat = categoria;
                      elem_tab.npar = 0; // TODO: 
                      insere_simbolo(elem_tab);
                      puts("T_IDENTIF");
