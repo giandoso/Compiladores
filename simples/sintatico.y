@@ -489,9 +489,10 @@ void log_(char *s, char *ref){
       strcmp(s, "ENSP") == 0){
       fprintf(yyout, "L%s\t%s\n", ref, s);
    }else if(strcmp(s, "DSVF") == 0 ||
-            strcmp(s, "DSVS") == 0 ||
-            strcmp(s, "RTSP") == 0){
+            strcmp(s, "DSVS") == 0){
       fprintf(yyout, "\t%s\tL%s\n", s, ref);
+   }else if(strcmp(s, "RTSP") == 0){
+      fprintf(yyout, "\t%s\t%s\n", s, ref);
    }else{
       fprintf(yyout, "\t%s\t%s\n", s, ref);
    } 
