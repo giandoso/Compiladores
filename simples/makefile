@@ -9,12 +9,12 @@ limpa:
 
 mvs: sintatico.y
 		./simples amostras/t6.simples
-		cat amostras/t6.mvs
+		cat amostras/t4.mvs
 
 roda: 
 	./mvs amostras/t6.mvs	
 build: 
 	make compila
-	./simples amostras/t6.simples
-	cat amostras/t6.mvs
+	./simples amostras/t4.simples
+	cat amostras/t4.mvs
 	

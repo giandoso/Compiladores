@@ -35,7 +35,8 @@ int busca_simbolo(char *id, char escopo){
     int i = 0;
     for(i = 0; i <= pos_tab; i++){
         //printf("%d %30s | %c\n", i, TabSimb[i].id, TabSimb[i].escopo);
-        if(TabSimb[i].escopo == escopo && strcmp(TabSimb[i].id, id) == 0){
+        if((TabSimb[i].escopo == escopo && strcmp(TabSimb[i].id, id) == 0) ||
+           (TabSimb[i].cat == 'F' && strcmp(TabSimb[i].id, id) == 0)){
             return i;
         }
     }

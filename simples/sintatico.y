@@ -105,6 +105,7 @@ cabecalho: T_PROGRAMA T_IDENTIF;
 variaveis: declaracao_variaveis
                               { puts("variaveis");
                               //   puts("CATEGORIA = V");
+                              //   printf("Debug: %c", categoria);
                                 mostra_tabela();
                                 char c = escopo == 'G' ? conta : conta_l;
                                 log_("AMEM", IntToString(c)); }
@@ -150,7 +151,6 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      conta++; };
 
 rotinas: { rotulo++;
-           categoria = 'F';
            log_("DSVS", IntToString(rotulo));
            empilha(rotulo, 'r'); }
          lista_funcoes 
@@ -163,6 +163,7 @@ lista_funcoes: funcao lista_funcoes
 
 funcao: T_FUNC tipo identificador 
          { // insere nome na tabela
+           categoria = 'F'; 
            rotulo++;
            strcpy(elem_tab.id, atomo);
            elem_tab.hash = conta;
@@ -328,7 +329,8 @@ selecao: T_SE expressao T_ENTAO
               log_("NADA", IntToString(r)); };
 
 atribuicao: T_IDENTIF
-            { int pos = busca_simbolo(atomo, escopo);
+            { //printf("Debug: %s, %c", atomo, escopo);
+              int pos = busca_simbolo(atomo, escopo);
               if(pos == -1){
                   msg("Variável não declarada");
               }
