@@ -13,6 +13,7 @@ typedef struct no{
 }*PtNo;
 
 struct elem_tab_simbolos{
+    int hash;
     char id[30];
     int endereco;
     int tipo;

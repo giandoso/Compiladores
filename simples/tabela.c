@@ -74,9 +74,9 @@ void mostra_tabela(){
     int ligado = 1; // ligar debug aqui, mudando para 1
     if(ligado == 1){
         puts("Tabela de simbolos");
-        printf("\n%30s | %s | %s | %s | %s | %s | %s | %s | %s", "ID", "END", "TIP", "MEC", "ROT", "ESC", "CAT", "NPAR", "LPAR");
+        printf("\n%3s |%30s | %s | %s | %s | %s | %s | %s | %s | %s", "  #", "ID", "END", "TIP", "MEC", "ROT", "ESC", "CAT", "NPAR", "LPAR");
         for(i = 0; i < pos_tab ; i++){
-            printf("\n%30s | %3d | %3d | %3d | %3d | %3c | %3c | %3d  | ", TabSimb[i].id, TabSimb[i].endereco, TabSimb[i].tipo, TabSimb[i].mecanismo, TabSimb[i].rotulo, TabSimb[i].escopo, TabSimb[i].cat, TabSimb[i].npar);
+            printf("\n%3d |%30s | %3d | %3d | %3d | %3d | %3c | %3c | %3d  | ",TabSimb[i].hash, TabSimb[i].id, TabSimb[i].endereco, TabSimb[i].tipo, TabSimb[i].mecanismo, TabSimb[i].rotulo, TabSimb[i].escopo, TabSimb[i].cat, TabSimb[i].npar);
             if(TabSimb[i].listapar != NULL){
                 mostra_lista(TabSimb[i].listapar);
             }

@@ -117,31 +117,35 @@ tipo: T_LOGICO      {tipo = LOG;}
     | T_INTEIRO     {tipo = INT;} ;
 
 lista_variaveis: lista_variaveis T_IDENTIF    
-                    { strcpy(elem_tab.id, atomo);
-                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
-                      elem_tab.tipo = tipo;
-                      elem_tab.mecanismo = -1;
-                      elem_tab.rotulo = -1;
-                      elem_tab.escopo = escopo;
-                      elem_tab.cat = categoria;
-                      elem_tab.npar = 0; // TODO: 
-                      insere_simbolo(elem_tab);
-                      puts("lista_variaveis T_IDENTIF");
-                      mostra_tabela();
-                      escopo == 'G' ? conta++ : conta_l++; }
+                  { strcpy(elem_tab.id, atomo);
+                     elem_tab.hash = conta;
+                     elem_tab.endereco = escopo == 'G' ? conta : conta_l;
+                     elem_tab.tipo = tipo;
+                     elem_tab.mecanismo = -1;
+                     elem_tab.rotulo = -1;
+                     elem_tab.escopo = escopo;
+                     elem_tab.cat = categoria;
+                     elem_tab.npar = 0; // TODO: 
+                     insere_simbolo(elem_tab);
+                     puts("lista_variaveis T_IDENTIF");
+                     mostra_tabela();
+                     if(escopo == 'L') conta_l++;
+                     conta++; }
                | T_IDENTIF    
-                      { strcpy(elem_tab.id, atomo);
-                      elem_tab.endereco = escopo == 'G' ? conta : conta_l;
-                      elem_tab.tipo = tipo;
-                      elem_tab.mecanismo = -1;
-                      elem_tab.rotulo = -1;
-                      elem_tab.escopo = escopo;
-                      elem_tab.cat = 'V';
-                      elem_tab.npar = 0; // TODO: 
-                      insere_simbolo(elem_tab);
-                      puts("T_IDENTIF");
-                      mostra_tabela();
-                      escopo == 'G' ? conta++ : conta_l++; };
+                  { strcpy(elem_tab.id, atomo);
+                     elem_tab.hash = conta;
+                     elem_tab.endereco = escopo == 'G' ? conta : conta_l;
+                     elem_tab.tipo = tipo;
+                     elem_tab.mecanismo = -1;
+                     elem_tab.rotulo = -1;
+                     elem_tab.escopo = escopo;
+                     elem_tab.cat = 'V';
+                     elem_tab.npar = 0; // TODO: 
+                     insere_simbolo(elem_tab);
+                     puts("T_IDENTIF");
+                     mostra_tabela();
+                     if(escopo == 'L') conta_l++;
+                     conta++; };
 
 rotinas: { rotulo++;
            categoria = 'F';
@@ -159,6 +163,7 @@ funcao: T_FUNC tipo identificador
          { // insere nome na tabela
            rotulo++;
            strcpy(elem_tab.id, atomo);
+           elem_tab.hash = conta;
            elem_tab.endereco = conta;
            elem_tab.tipo = tipo;
            elem_tab.mecanismo = -1;
@@ -171,7 +176,7 @@ funcao: T_FUNC tipo identificador
            mostra_tabela();
            log_("ENSP", IntToString(rotulo));
            empilha(rotulo, 'r');
-           // conta++ (?)
+           conta++;
            // mudar o escopo para local
            escopo = 'L';
            parametros = NULL;
@@ -201,6 +206,7 @@ lista_parametros: lista_parametros parametro
 parametro: mecanismo tipo identificador
             { // incluir o parametros na tabela de simbolos
                strcpy(elem_tab.id, atomo);
+               elem_tab.hash = conta;
                elem_tab.endereco = conta;
                elem_tab.tipo = tipo;
                elem_tab.mecanismo = mecanismo;
