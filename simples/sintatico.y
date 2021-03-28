@@ -30,6 +30,7 @@ int rotulo = 10;
 int tipo;
 int mecanismo;
 char escopo;
+int categoria;
 int npar;
 PtNo parametros = NULL;
 
@@ -102,6 +103,7 @@ cabecalho: T_PROGRAMA T_IDENTIF;
 
 variaveis: declaracao_variaveis
                               { puts("variaveis");
+                                categoria = 'V';
                                 mostra_tabela();
                                 log_("AMEM", IntToString(conta)); }
          | ;
@@ -119,7 +121,7 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       elem_tab.mecanismo = -1;
                       elem_tab.rotulo = -1;
                       elem_tab.escopo = escopo;
-                      elem_tab.cat = 'V';
+                      elem_tab.cat = categoria;
                       elem_tab.npar = 0; // TODO: 
                       insere_simbolo(elem_tab);
                       puts("lista_variaveis T_IDENTIF");
@@ -139,7 +141,8 @@ lista_variaveis: lista_variaveis T_IDENTIF
                       mostra_tabela();
                       conta++; };
 
-rotinas: { //rotulo++;
+rotinas: { rotulo++;
+           categoria = 'F';
            log_("DSVS", IntToString(rotulo));
            empilha(rotulo, 'r'); }
          lista_funcoes 
@@ -158,7 +161,7 @@ funcao: T_FUNC tipo identificador
            elem_tab.mecanismo = -1;
            elem_tab.rotulo = -1;
            elem_tab.escopo = escopo;
-           elem_tab.cat = 'F';
+           elem_tab.cat = categoria;
            elem_tab.npar = 0; 
            insere_simbolo(elem_tab);
            puts("funcao");
@@ -189,7 +192,7 @@ funcao: T_FUNC tipo identificador
         ;
 
 lista_parametros: lista_parametros parametro 
-                | ;
+                | { categoria = 'P';};
 
 parametro: mecanismo tipo identificador
             { // incluir o parametros na tabela de simbolos
@@ -199,7 +202,7 @@ parametro: mecanismo tipo identificador
                elem_tab.mecanismo = mecanismo;
                elem_tab.rotulo = -1;
                elem_tab.escopo = escopo;
-               elem_tab.cat = 'P';
+               elem_tab.cat = categoria;
                elem_tab.npar = 0; 
                insere_simbolo(elem_tab);
                puts("parametro");
