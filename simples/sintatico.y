@@ -15,6 +15,7 @@ char* IntToString(int);
 void verifica_tipo_INT();
 void verifica_tipo_LOG();
 int popula_deslocamento();
+void remove_variaveis_locais(int);
 PtNo insere(PtNo, int, int);
 
 int yyerror(char *);
@@ -180,6 +181,7 @@ funcao: T_FUNC tipo identificador
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
          {  //remover variaveis locais
+            remove_variaveis_locais(npar);
             //mudar o escopo para global
             log_("RTSP", IntToString(npar));
             escopo = 'G';

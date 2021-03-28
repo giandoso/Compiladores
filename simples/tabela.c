@@ -99,8 +99,11 @@ int popula_deslocamento(PtNo lista){
     TabSimb[i].npar = npar;
     TabSimb[i].listapar = lista;
     mostra_tabela();
-    pos_tab -= npar;
     mostra_tabela();
     return npar;
+}
+
+void remove_variaveis_locais(int npar){
+    pos_tab -= npar;
 }
 
