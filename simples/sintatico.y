@@ -328,16 +328,26 @@ atribuicao: T_IDENTIF
               empilha(TabSimb[pos].tipo, 't'); }
             T_ATRIB expressao
             { // gerar ARMI se a atribuicao eh um parametro por referencia
+              if(categoria == 'P' && mecanismo == REF){
+                 log_("ARMI", ""); //TODO: Calcular ref do ARMI
+              }
               // gerar ARZL para parametro por valor ou variavel local ou nome de funcao
-              // gerar ARZG para variavel local
-
-              mostra_pilha("Atribuição"); 
-              int texp = desempilha();
-              int tvar = desempilha();
-              int end = desempilha();
-              if(texp != tvar)
+              if((categoria == 'P' && mecanismo == VAL) ||
+                 (categoria == 'V' && escopo == 'L')    ||
+                 (categoria == 'F')){
+                 log_("ARZL", ""); //TODO: Calcular ref do ARZL
+              }
+              // gerar ARZG para variavel global
+              if(categoria == 'V' && escopo == 'G'){
+                  mostra_pilha("Atribuição"); 
+                  int texp = desempilha();
+                  int tvar = desempilha();
+                  int end = desempilha();
+                  if(texp != tvar)
                   msg("Incompatibilidade de tipos!");
-              log_("ARZG", IntToString(end)); };
+                  log_("ARZG", IntToString(end));
+              }
+            };
 
 chamada_funcao: T_IDENTIF T_ABRE lista_argumentos T_FECHA;
 
