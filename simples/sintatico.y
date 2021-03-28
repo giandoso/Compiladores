@@ -14,7 +14,7 @@ void log_(char *, char *);
 char* IntToString(int);
 void verifica_tipo_INT();
 void verifica_tipo_LOG();
-void popula_deslocamento();
+int popula_deslocamento();
 PtNo insere(PtNo, int, int);
 
 int yyerror(char *);
@@ -231,15 +231,33 @@ identificador: T_IDENTIF
                };
 
 leitura: T_LEIA T_IDENTIF           
-            { // gerar ARMI se a leitura eh para um parametro por referencia
-              // gerar ARZL para parametro por valor ou variavel local
-              // gerar ARZG para variavel global;
-              log_("LEIA", ""); 
-              int pos = busca_simbolo(atomo);
-              if(pos == -1){
-                  msg("Variável não declarada");
+            { log_("LEIA", ""); 
+              // gerar ARMI se a leitura eh para um parametro por referencia
+              if(escopo == 'L' && mecanismo == REF){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if(pos == -1)
+                     msg("Variável não declarada");
+                  // TODO: Calcular o endereço do ARMI direito
+                  log_("ARMI", IntToString(TabSimb[pos].endereco));
+                  
               }
-              log_("ARZG", IntToString(TabSimb[pos].endereco)); };
+              // gerar ARZL para parametro por valor ou variavel local
+              if(escopo == 'L' && mecanismo == VAL){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if(pos == -1)
+                     msg("Variável não declarada");
+                  log_("ARZL", IntToString(TabSimb[pos].endereco));
+              }
+              // gerar ARZG para variavel global;
+              if(escopo == 'G'){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if(pos == -1)
+                     msg("Variável não declarada");
+                  log_("ARZG", IntToString(TabSimb[pos].endereco));
+              }
+              
+              };
+              
 
 escrita: T_ESCREVA expressao   
             { log_("ESCR", "");
@@ -293,7 +311,7 @@ selecao: T_SE expressao T_ENTAO
               log_("NADA", IntToString(r)); };
 
 atribuicao: T_IDENTIF
-            { int pos = busca_simbolo(atomo);
+            { int pos = busca_simbolo(atomo, escopo);
               if(pos == -1){
                   msg("Variável não declarada");
               }
@@ -369,18 +387,46 @@ chamada: T_ABRE
 
 termo: identificador chamada
             { // gerar CRCG - Se a variavel é global
+               if(escopo == 'G' && mecanismo == VAL){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if (pos == -1){
+                        msg("Variável não declarada");
+                  }              
+                  log_("CRVG", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               }
               // gerar CREG - Se a variavel é global e a passagem por referencia 
+               if(escopo == 'G' && mecanismo == REF){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if (pos == -1){
+                        msg("Variável não declarada");
+                  }              
+                  log_("CREG", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               }
               // gerar CREL - Se a variavel é local e a passagem por referencia
+               if(escopo == 'L' && mecanismo == REF){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if (pos == -1){
+                        msg("Variável não declarada");
+                  }              
+                  log_("CREL", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               }
               // gerar CRVL - Se a variavel é local e a passagem por valor ou 
-              //            - Se a variavel é por referencia e a passagem por referencia (?)
-              // gerar CRVI - Se a variavel eh por referencia e a passagem por valor 
-              int pos = busca_simbolo(atomo);
-              if (pos == -1){
-                  msg("Variável não declarada");
-              }              
-              log_("CRVG", IntToString(TabSimb[pos].endereco));
-              empilha(TabSimb[pos].tipo, 't');
-              }
+              //            - Se a variavel é por referencia e a passagem por referencia (TODO: ?)
+               if(escopo == 'L' && mecanismo == REF){
+                  int pos = busca_simbolo(atomo, escopo);
+                  if (pos == -1){
+                        msg("Variável não declarada");
+                  }              
+                  log_("CRVL", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               }
+              
+              // gerar CRVI - Se a variavel eh por referencia e a passagem por valor (TODO: ?)
+              
+            }
      | T_NUMERO
             { log_("CRCT", atomo); 
               empilha(INT, 't'); }

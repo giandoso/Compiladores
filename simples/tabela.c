@@ -12,22 +12,34 @@ void maiuscula(char *s){
     }
 }
 
-int busca_simbolo(char *id, char escopo){
+int simbolo_existe(char *id, char escopo){
+    // puts("Simbolo_existe");
     // printf("> %30s | %c\n", id, escopo);
+    int i = 0;
+    for(i = 0; i <= pos_tab; i++){
+        // printf("%d %30s | %c\n", i, TabSimb[i].id, TabSimb[i].escopo);
+        if(TabSimb[i].escopo == escopo && strcmp(TabSimb[i].id, id) == 0){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int busca_simbolo(char *id, char escopo){
+    //puts("Busca_simbolo");
+    //printf("> %30s | %c\n", id, escopo);
     // int i = pos_tab -1;
     //maiuscula(id);
     // for(; strcmp(TabSimb[i].id, id) && i>=0; i--);
     // return i;
     int i = 0;
     for(i = 0; i <= pos_tab; i++){
-        // printf("%d %30s | %c\n", i, TabSimb[i].id, TabSimb[i].escopo);
-        if(TabSimb[i].escopo == escopo){
-            if(!strcmp(TabSimb[i].id, id)){
-                return -1;
-            }
+        //printf("%d %30s | %c\n", i, TabSimb[i].id, TabSimb[i].escopo);
+        if(TabSimb[i].escopo == escopo && strcmp(TabSimb[i].id, id) == 0){
+            return i;
         }
     }
-    return 0;
+    return -1;
     
 }
 
@@ -37,10 +49,7 @@ void insere_simbolo(struct elem_tab_simbolos elem){
         msg("OVERFLOW");
     }
 
-    int i = 0;
-    i = busca_simbolo(elem.id, elem.escopo);
-
-    if(i != 0){
+    if(simbolo_existe(elem.id, elem.escopo)){
         msg("Identificador duplicado");
     }
     //maiuscula(elem.id);
