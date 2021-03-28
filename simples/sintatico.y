@@ -29,6 +29,7 @@ int rotulo = 10;
 int tipo;
 int mecanismo;
 char escopo;
+int npar;
 PtNo parametros = NULL;
 
 int ehVariavel;
@@ -168,19 +169,19 @@ funcao: T_FUNC tipo identificador
            // mudar o escopo para local
            escopo = 'L';
            parametros = NULL;
+           npar = 0; 
          }
         T_ABRE
         lista_parametros T_FECHA
          { //Ajustar deslocamentos e incluir lista de parametros
-           popula_deslocamento(parametros);
+           npar = popula_deslocamento(parametros);
 
          }
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
          {  //remover variaveis locais
             //mudar o escopo para global
-            int r = desempilha();
-            log_("RTSP", IntToString(r));
+            log_("RTSP", IntToString(npar));
             escopo = 'G';
          }
         ;

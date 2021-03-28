@@ -85,7 +85,7 @@ void mostra_tabela(){
     }
 }
 
-void popula_deslocamento(PtNo lista){
+int popula_deslocamento(PtNo lista){
     int i = pos_tab - 1;
     int start = -3;
     int npar = 0;
@@ -99,5 +99,8 @@ void popula_deslocamento(PtNo lista){
     TabSimb[i].npar = npar;
     TabSimb[i].listapar = lista;
     mostra_tabela();
+    pos_tab -= npar;
+    mostra_tabela();
+    return npar;
 }
 
