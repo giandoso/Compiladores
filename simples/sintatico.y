@@ -16,6 +16,7 @@ void verifica_tipo_INT();
 void verifica_tipo_LOG();
 int popula_deslocamento();
 void remove_variaveis_locais(int, int);
+void mostra_lista(PtNo);
 PtNo insere(PtNo, int, int);
 
 int yyerror(char *);
@@ -233,8 +234,7 @@ lista_comandos: comando lista_comandos
 comando: entrada_saida
        | repeticao
        | selecao
-       | atribuicao
-       | chamada_funcao;
+       | atribuicao;
 
 entrada_saida: leitura         
              | escrita;
@@ -350,22 +350,49 @@ atribuicao: T_IDENTIF
               // gerar ARZG para variavel global
               if(categoria == 'V' && escopo == 'G'){
                   mostra_pilha("Atribuição"); 
-                  int texp = desempilha();
-                  int tvar = desempilha();
-                  int end = desempilha();
-                  if(texp != tvar)
-                  msg("Incompatibilidade de tipos!");
-                  log_("ARZG", IntToString(end));
+                  // int texp = desempilha();
+                  // int tvar = desempilha();
+                  // int end = desempilha();
+                  // if(texp != tvar)
+                     // msg("Incompatibilidade de tipos!");
+                  // log_("ARZG", IntToString(end));
+                  log_("ARZG", "");
               }
             };
 
-chamada_funcao: T_IDENTIF T_ABRE lista_argumentos T_FECHA;
+
+chamada_funcao:   identificador T_ABRE
+                  {  printf("\nDebug chamada função  %s %c\n", atomo, escopo);
+                     int pos = busca_simbolo(atomo, escopo);
+                     if(pos == -1)
+                        msg("Variável não declarada");
+                        
+                     parametros = TabSimb[pos].listapar; }
+                  argumentos 
+                  // { printf("\nDebug chamada função  %s %c\n", atomo, escopo); }
+                  T_FECHA;
+
+
+argumentos: lista_argumentos 
+            // comparar numero de argumentos com o numero de parametros
+            | 
+            // contar argumentos
+            ;
 
 lista_argumentos: lista_argumentos argumento
-                | argumento;
+               //  { printf("\nDebug argumentos>lista_argumentos>lista arg %s %c\n", atomo, escopo); }
+                | 
+                { printf("\nDebug argumentos>lista_argumentos>arg %s %c\n", atomo, escopo); 
+                  mostra_lista(parametros);
+                  parametros = parametros->prox == NULL ? parametros : parametros->prox;
+                };
 
 argumento: expressao
          {
+            printf("\nDebug argumentos>expressão %s %c\n", atomo, escopo);
+            mostra_lista(parametros);
+            parametros = parametros->prox == NULL ? parametros : parametros->prox;
+            
             // comparar tipo e categoria do argumento com o parametro
             // (somente variaveis podem ser passadas por referencia)
          };
@@ -404,10 +431,10 @@ expressao: expressao T_VEZES expressao
          | expressao T_OU expressao
             { verifica_tipo_LOG(); 
               log_("DISJ", ""); }
-         | termo; 
+         | termo;
 
 termo: identificador
-            { // gerar CRCG - Se a variavel é global
+            { // gerar CRvG - Se a variavel é global
                if(escopo == 'G' && mecanismo == VAL){
                   int pos = busca_simbolo(atomo, escopo);
                   if (pos == -1){
@@ -436,7 +463,8 @@ termo: identificador
                }
               // gerar CRVL - Se a variavel é local e a passagem por valor ou 
               //            - Se a variavel é por referencia e a passagem por referencia (TODO: ?)
-               if(escopo == 'L' && mecanismo == REF){
+              //              Acessando argumento por valor
+               if(escopo == 'L' && mecanismo == VAL){
                   int pos = busca_simbolo(atomo, escopo);
                   if (pos == -1){
                         msg("Variável não declarada");
@@ -446,6 +474,7 @@ termo: identificador
                }
               
               // gerar CRVI - Se a variavel eh por referencia e a passagem por valor (TODO: ?)
+              //            - Acessando argumento por referencia 
               
             }
      | T_NUMERO
@@ -462,6 +491,7 @@ termo: identificador
               if(t1 != LOG) msg("Incompatibilidade de tipo!");
               log_("NEGA", ""); }
      | T_ABRE expressao T_FECHA;
+     | chamada_funcao;
 
 
 %%
@@ -517,22 +547,22 @@ void log_(char *s, char *ref){
 }
 
 void verifica_tipo_INT(){
-   int t1 = desempilha();
-   int t2 = desempilha(); 
+   // int t1 = desempilha();
+   // int t2 = desempilha(); 
 
-   if(t1 != INT || t2 != INT){
-      msg("Incompatibilidade de tipos!");
-   }
+   // if(t1 != INT || t2 != INT){
+      // msg("Incompatibilidade de tipos!");
+   // }
 }
 
 void verifica_tipo_LOG(){
-   int t1 = desempilha();
-   int t2 = desempilha(); 
+   // int t1 = desempilha();
+   // int t2 = desempilha(); 
 
-   if(t1 != LOG || t2 != LOG){
-      msg("Incompatibilidade de tipos!");
-   }
-   empilha(LOG, 't');
+   // if(t1 != LOG || t2 != LOG){
+      // msg("Incompatibilidade de tipos!");
+   // }
+   // empilha(LOG, 't');
 }
 char* IntToString(int n){
     sprintf(str, "%d", n);
