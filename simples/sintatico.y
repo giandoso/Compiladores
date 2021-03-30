@@ -27,13 +27,14 @@ extern FILE *yyout;
 
 char str[80];
 int conta = 0;
-int rotulo = -1;
+int rotulo = 0;
 int tipo;
 int mecanismo;
 char escopo;
 int categoria;
 int npar;
-int conta_l;
+int nvar_g;
+int nvar_l;
 PtNo parametros = NULL;
 
 int ehVariavel;
@@ -99,16 +100,14 @@ programa: cabecalho           { log_("INPP", ""); escopo = 'G';}
           rotinas
           T_INICIO 
             lista_comandos 
-          T_FIM               { log_("FIMP", ""); };
+          T_FIM               { if(nvar_g > 0)
+                                 log_("DMEM", IntToString(nvar_g));
+                                log_("FIMP", ""); };
 
 cabecalho: T_PROGRAMA T_IDENTIF;
 
 variaveis: declaracao_variaveis
-                              { puts("variaveis");
-                              //   puts("CATEGORIA = V");
-                              //   printf("Debug: %c", categoria);
-                                mostra_tabela();
-                                char c = escopo == 'G' ? conta : conta_l;
+                              { char c = escopo == 'G' ? nvar_g : nvar_l;
                                 log_("AMEM", IntToString(c)); }
          | ;
 
@@ -122,7 +121,7 @@ lista_variaveis: lista_variaveis T_IDENTIF
                   { categoria = 'V';
                      strcpy(elem_tab.id, atomo);
                      elem_tab.hash = conta;
-                     elem_tab.endereco = escopo == 'G' ? conta : conta_l;
+                     elem_tab.endereco = escopo == 'G' ? nvar_g : nvar_l;
                      elem_tab.tipo = tipo;
                      elem_tab.mecanismo = -1;
                      elem_tab.rotulo = -1;
@@ -130,15 +129,15 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      elem_tab.cat = categoria;
                      elem_tab.npar = 0; // TODO: 
                      insere_simbolo(elem_tab);
-                     puts("lista_variaveis T_IDENTIF");
-                     mostra_tabela();
-                     if(escopo == 'L') conta_l++;
+                     // mostra_tabela();
+                     if(escopo == 'L') nvar_l++;
+                     if(escopo == 'G') nvar_g++;  
                      conta++; }
                | T_IDENTIF    
                   { categoria = 'V';
                      strcpy(elem_tab.id, atomo);
                      elem_tab.hash = conta;
-                     elem_tab.endereco = escopo == 'G' ? conta : conta_l;
+                     elem_tab.endereco = escopo == 'G' ? nvar_g : nvar_l;
                      elem_tab.tipo = tipo;
                      elem_tab.mecanismo = -1;
                      elem_tab.rotulo = -1;
@@ -146,13 +145,12 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      elem_tab.cat = categoria;
                      elem_tab.npar = 0; // TODO: 
                      insere_simbolo(elem_tab);
-                     puts("T_IDENTIF");
-                     mostra_tabela();
-                     if(escopo == 'L') conta_l++;
+                     // mostra_tabela();
+                     if(escopo == 'L') nvar_l++;
+                     if(escopo == 'G') nvar_g++;  
                      conta++; };
 
-rotinas: { rotulo++;
-           log_("DSVS", IntToString(rotulo));
+rotinas: { log_("DSVS", IntToString(rotulo));
            empilha(rotulo, 'r'); }
          lista_funcoes 
          { int r = desempilha();
@@ -177,7 +175,7 @@ funcao: T_FUNC tipo identificador
            elem_tab.npar = 0; 
            insere_simbolo(elem_tab);
            puts("funcao");
-           mostra_tabela();
+         //   mostra_tabela();
            log_("ENSP", IntToString(rotulo));
            empilha(rotulo, 'r');
            conta++;
@@ -185,7 +183,7 @@ funcao: T_FUNC tipo identificador
            escopo = 'L';
            parametros = NULL;
            npar = 0; 
-           conta_l = 0;
+           nvar_l = 0;
          }
         T_ABRE
         lista_parametros T_FECHA
@@ -195,9 +193,10 @@ funcao: T_FUNC tipo identificador
         variaveis
         T_INICIO lista_comandos T_FIMFUNC
          {  //remover variaveis locais
-            remove_variaveis_locais(npar, conta_l);
+            remove_variaveis_locais(npar, nvar_l);
             //mudar o escopo para global
-            log_("DMEM", IntToString(conta_l));
+            if(nvar_l > 0)
+              log_("DMEM", IntToString(nvar_l));
             log_("RTSP", IntToString(npar));
             int r = desempilha();
             escopo = 'G';
@@ -220,7 +219,7 @@ parametro: mecanismo tipo identificador
                elem_tab.npar = 0; 
                insere_simbolo(elem_tab);
                puts("parametro");
-               mostra_tabela();
+               // mostra_tabela();
                parametros = insere(parametros, tipo, mecanismo);
                conta++;
             };
@@ -286,10 +285,10 @@ repeticao: T_ENQTO
               log_("NADA", IntToString(rotulo)); 
               empilha(rotulo, 'r'); }
            expressao T_FACA 
-            { mostra_pilha("Repetição"); 
+            { //mostra_pilha("Repetição"); 
               int t1 = desempilha();
               if(t1 != LOG)
-                  msg("Incompatibilidade de tipos!");
+                  msg("Enquanto > Incompatibilidade de tipos!");
               rotulo++; 
               log_("DSVF", IntToString(rotulo)); 
               empilha(rotulo, 'r'); }
@@ -298,23 +297,27 @@ repeticao: T_ENQTO
               int r2 = desempilha();  
               log_("DSVS", IntToString(r2)); 
               log_("NADA", IntToString(r1)); }
-         | T_REPITA lista_comandos 
+         | T_REPITA 
             { rotulo++; 
               log_("NADA", IntToString(rotulo)); 
               empilha(rotulo, 'r'); }
+            lista_comandos 
+            
            T_ATE expressao 
-            { rotulo++; 
-              log_("DSVF", IntToString(rotulo)); 
-              empilha(rotulo, 'r'); }
+            {  int t1 = desempilha();
+               if(t1 != LOG)
+                  msg("Repita > Incompatibilidade de tipos!");
+               int r = desempilha(); 
+               log_("DSVF", IntToString(r)); }
            T_FIMREPITA;
 
 
 
 selecao: T_SE expressao T_ENTAO
-            { mostra_pilha("Seleção"); 
+            { //mostra_pilha("Seleção"); 
               int t1 = desempilha();
               if(t1 != LOG)
-                  msg("Incompatibilidade de tipos!");
+                  msg("Selecao > Incompatibilidade de tipos!");
               rotulo++;
               log_("DSVF", IntToString(rotulo));
               empilha(rotulo, 'r'); }
@@ -329,35 +332,37 @@ selecao: T_SE expressao T_ENTAO
               log_("NADA", IntToString(r)); };
 
 atribuicao: T_IDENTIF
-            { //printf("Debug: %s, %c", atomo, escopo);
-              int pos = busca_simbolo(atomo, escopo);
-              if(pos == -1){
-                  msg("Variável não declarada");
-              }
-              empilha(TabSimb[pos].endereco, 'e');
-              empilha(TabSimb[pos].tipo, 't'); }
+            { 
+               int pos = busca_simbolo(atomo, escopo);
+               if(pos == -1)
+               msg("Variável não declarada");
+               empilha(TabSimb[pos].endereco, 'e');
+               empilha(TabSimb[pos].tipo, 't'); 
+               printf("debug atribuicao > T_IDENTIF | %s\n", atomo); }
+
             T_ATRIB expressao
-            { // gerar ARMI se a atribuicao eh um parametro por referencia
-              if(categoria == 'P' && mecanismo == REF){
-                 log_("ARMI", ""); //TODO: Calcular ref do ARMI
-              }
-              // gerar ARZL para parametro por valor ou variavel local ou nome de funcao
-              if((categoria == 'P' && mecanismo == VAL) ||
-                 (categoria == 'V' && escopo == 'L')    ||
-                 (categoria == 'F')){
-                 log_("ARZL", ""); //TODO: Calcular ref do ARZL
-              }
-              // gerar ARZG para variavel global
-              if(categoria == 'V' && escopo == 'G'){
-                  mostra_pilha("Atribuição"); 
-                  // int texp = desempilha();
-                  // int tvar = desempilha();
-                  // int end = desempilha();
-                  // if(texp != tvar)
-                     // msg("Incompatibilidade de tipos!");
-                  // log_("ARZG", IntToString(end));
-                  log_("ARZG", "");
-              }
+            {  //mostra_pilha("Atribuição"); 
+               int texp = desempilha();
+               int tvar = desempilha();
+               if(texp != tvar)
+                     msg("Incompatibilidade de tipos!"); 
+               int end = desempilha();
+               int pos = busca_hash(end);
+               
+               // printf(" Debug Atribuição | Atomo = %s | ESC = %c | CAT = %s", atomo, TabSimb[pos].cat, TabSimb[pos].cat);
+               
+               if(TabSimb[pos].cat == 'P' && TabSimb[pos].mecanismo == REF)
+                  // gerar ARMI se a atribuicao eh um parametro por referencia
+                  log_("ARMI", IntToString(end));
+               if((TabSimb[pos].cat == 'P' && TabSimb[pos].mecanismo == VAL) ||
+                  (TabSimb[pos].cat == 'V' && TabSimb[pos].escopo == 'L')    ||
+                  (TabSimb[pos].cat == 'F'))
+                  // gerar ARZL para parametro por valor ou variavel local ou nome de funcao
+                  log_("ARZL", IntToString(end));
+               if(TabSimb[pos].cat == 'V' && TabSimb[pos].escopo == 'G')
+                  // gerar ARZG para variavel global
+                  log_("ARZG", IntToString(end));
+               
             };
 
 
@@ -366,17 +371,28 @@ chamada_funcao:   identificador T_ABRE
                      int pos = busca_simbolo(atomo, escopo);
                      if(pos == -1)
                         msg("Variável não declarada");
-                        
+                     
+                     log_("AMEM", "1");
+                     empilha(TabSimb[pos].rotulo, 'r');
                      parametros = TabSimb[pos].listapar; }
                   argumentos 
                   // { printf("\nDebug chamada função  %s %c\n", atomo, escopo); }
-                  T_FECHA;
+                  T_FECHA
+                  {
+                     int r = desempilha();
+                     log_("SVCP", "");
+                     log_("DSVS", IntToString(r));
+
+                  };
 
 
 argumentos: lista_argumentos 
             // comparar numero de argumentos com o numero de parametros
             | 
             // contar argumentos
+            {printf("\nDebug conta argumentos %s %c\n", atomo, escopo);
+            mostra_lista(parametros);
+            }
             ;
 
 lista_argumentos: lista_argumentos argumento
@@ -392,8 +408,9 @@ argumento: expressao
             printf("\nDebug argumentos>expressão %s %c\n", atomo, escopo);
             mostra_lista(parametros);
             parametros = parametros->prox == NULL ? parametros : parametros->prox;
-            
-            // comparar tipo e categoria do argumento com o parametro
+            // ehVariavel é para decidir se um parâmetro por referência está recebendo uma variável.
+            // ehReferencia é para sinalizar que o parâmetro correspondente ao argumento é por referência
+            // TODO: comparar tipo e categoria do argumento com o parametro
             // (somente variaveis podem ser passadas por referencia)
          };
 
@@ -427,59 +444,52 @@ expressao: expressao T_VEZES expressao
               empilha(LOG, 't'); }
          | expressao T_E expressao
             { verifica_tipo_LOG(); 
-              log_("CONJ", ""); }
+              log_("CONJ", "");
+              empilha(LOG, 't'); }
          | expressao T_OU expressao
             { verifica_tipo_LOG(); 
-              log_("DISJ", ""); }
+              log_("DISJ", "");
+              empilha(LOG, 't'); }
          | termo;
 
 termo: identificador
-            { // gerar CRvG - Se a variavel é global
-               if(escopo == 'G' && mecanismo == VAL){
-                  int pos = busca_simbolo(atomo, escopo);
-                  if (pos == -1){
-                        msg("Variável não declarada");
-                  }              
-                  log_("CRVG", IntToString(TabSimb[pos].endereco));
-                  empilha(TabSimb[pos].tipo, 't');
-               }
-              // gerar CREG - Se a variavel é global e a passagem por referencia 
-               if(escopo == 'G' && mecanismo == REF){
-                  int pos = busca_simbolo(atomo, escopo);
-                  if (pos == -1){
-                        msg("Variável não declarada");
-                  }              
+            { 
+               int pos = busca_simbolo(atomo, escopo);
+               if(pos == -1)
+                  msg("Variável não declada!");
+               printf("Debug termo>identificador | %s\n", atomo);
+
+               if(TabSimb[pos].escopo == 'G' && TabSimb[pos].mecanismo == REF && TabSimb[pos].cat == 'V'){
+                  // gerar CREG - Se a variavel é global e a passagem por referencia 
                   log_("CREG", IntToString(TabSimb[pos].endereco));
-                  empilha(TabSimb[pos].tipo, 't');
-               }
-              // gerar CREL - Se a variavel é local e a passagem por referencia
-               if(escopo == 'L' && mecanismo == REF){
-                  int pos = busca_simbolo(atomo, escopo);
-                  if (pos == -1){
-                        msg("Variável não declarada");
-                  }              
+                  empilha(TabSimb[pos].tipo, 't'); 
+               }else if(TabSimb[pos].escopo == 'L' && TabSimb[pos].mecanismo == REF && TabSimb[pos].cat == 'V'){
+                  // gerar CREL - Se a variavel é local e a passagem por referencia
                   log_("CREL", IntToString(TabSimb[pos].endereco));
                   empilha(TabSimb[pos].tipo, 't');
-               }
-              // gerar CRVL - Se a variavel é local e a passagem por valor ou 
-              //            - Se a variavel é por referencia e a passagem por referencia (TODO: ?)
-              //              Acessando argumento por valor
-               if(escopo == 'L' && mecanismo == VAL){
-                  int pos = busca_simbolo(atomo, escopo);
-                  if (pos == -1){
-                        msg("Variável não declarada");
-                  }              
+               }else if(TabSimb[pos].escopo == 'L' && TabSimb[pos].mecanismo == VAL){
+                  // gerar CRVL - Se a variavel é local e a passagem por valor ou 
+                  //            - Se a variavel é por referencia e a passagem por referencia (TODO: ?)
+                  //              Acessando argumento por valor
                   log_("CRVL", IntToString(TabSimb[pos].endereco));
                   empilha(TabSimb[pos].tipo, 't');
-               }
-              
-              // gerar CRVI - Se a variavel eh por referencia e a passagem por valor (TODO: ?)
-              //            - Acessando argumento por referencia 
-              
+               }else if(TabSimb[pos].mecanismo == REF){
+                  // gerar CRVI - Se a variavel eh por referencia e a passagem por valor (TODO: ?)
+                  //            - Acessando argumento por referencia 
+                  log_("CRVI", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               }else if(TabSimb[pos].escopo == 'G' && TabSimb[pos].cat == 'V'){
+                  // gerar CRvG - Se a variavel é global
+                  log_("CRVG", IntToString(TabSimb[pos].endereco));
+                  empilha(TabSimb[pos].tipo, 't');
+               } 
+               
             }
      | T_NUMERO
-            { log_("CRCT", atomo); 
-              empilha(INT, 't'); }
+            { 
+               printf("Debug termo>numero | %s\n", atomo);
+               log_("CRCT", atomo); 
+               empilha(INT, 't'); }
      | T_V
             { log_("CRCT\t1", ""); 
               empilha(LOG, 't'); }
@@ -488,8 +498,9 @@ termo: identificador
               empilha(LOG, 't'); }
      | T_NAO termo
             { int t1 = desempilha();
-              if(t1 != LOG) msg("Incompatibilidade de tipo!");
-              log_("NEGA", ""); }
+              if(t1 != LOG) msg("T_NAO > Incompatibilidade de tipo!");
+              log_("NEGA", "");
+              empilha(LOG, 't'); }
      | T_ABRE expressao T_FECHA;
      | chamada_funcao;
 
@@ -536,33 +547,40 @@ void log_(char *s, char *ref){
    if(strcmp(s, "NADA") == 0 ||
       strcmp(s, "ENSP") == 0){
       fprintf(yyout, "L%s\t%s\n", ref, s);
+      printf("L%s\t%s\n", ref, s);
    }else if(strcmp(s, "DSVF") == 0 ||
             strcmp(s, "DSVS") == 0){
       fprintf(yyout, "\t%s\tL%s\n", s, ref);
+      printf("\t%s\tL%s\n", s, ref);
    }else if(strcmp(s, "RTSP") == 0){
       fprintf(yyout, "\t%s\t%s\n", s, ref);
+      printf("\t%s\t%s\n", s, ref);
+   }else if(strcmp(ref, "") == 0){
+      fprintf(yyout, "\t%s\n", s);
+      printf("\t%s\n", s);
    }else{
       fprintf(yyout, "\t%s\t%s\n", s, ref);
+      printf("\t%s\t%s\n", s, ref);
    } 
 }
 
 void verifica_tipo_INT(){
-   // int t1 = desempilha();
-   // int t2 = desempilha(); 
-
-   // if(t1 != INT || t2 != INT){
-      // msg("Incompatibilidade de tipos!");
-   // }
+   // mostra_pilha("verifica tipo int");
+   int t1 = desempilha();
+   int t2 = desempilha(); 
+   // mostra_pilha("verifica tipo int");
+   if(t1 != INT || t2 != INT){
+      msg("Verifica_tipo_INT > Incompatibilidade de tipos!");
+   }
 }
 
 void verifica_tipo_LOG(){
-   // int t1 = desempilha();
-   // int t2 = desempilha(); 
+   int t1 = desempilha();
+   int t2 = desempilha(); 
 
-   // if(t1 != LOG || t2 != LOG){
-      // msg("Incompatibilidade de tipos!");
-   // }
-   // empilha(LOG, 't');
+   if(t1 != LOG || t2 != LOG){
+      msg("Verifica_tipo_LOG > Incompatibilidade de tipos!");
+   }
 }
 char* IntToString(int n){
     sprintf(str, "%d", n);

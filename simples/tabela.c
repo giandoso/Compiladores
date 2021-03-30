@@ -40,8 +40,17 @@ int busca_simbolo(char *id, char escopo){
             return i;
         }
     }
-    return -1;
-    
+    return -1;   
+}
+
+int busca_hash(int endereco){
+    int i = 0;
+    for(i = 0; i <= pos_tab; i++){
+        if(TabSimb[i].endereco == endereco){
+            printf("busca hash: %s",TabSimb[i].id);
+            return i; 
+        }
+    }
 }
 
 void insere_simbolo(struct elem_tab_simbolos elem){
@@ -61,7 +70,11 @@ void insere_simbolo(struct elem_tab_simbolos elem){
 void mostra_lista(PtNo L){
 	printf("[ ");
 	while(L){
-		printf("{%d | %d}", L->tipo, L->mec);
+        char tipo[4] = "";
+        L->tipo == 1 ? strcpy(tipo, "INT") : strcpy(tipo, "LOG"); 
+        char mec[4] = "";
+        L->mec == 10 ? strcpy(mec, "VAL") : strcpy(mec, "REF");
+		printf("{%s | %s}", tipo, mec);
 		L=L->prox;
 		if(L){
 			printf(" -> ");
@@ -74,9 +87,10 @@ void mostra_tabela(){
     int i = 0;
     int ligado = 1; // ligar debug aqui, mudando para 1
     if(ligado == 1){
-        puts("Tabela de simbolos");
         printf("\n%3s |%30s | %s | %s | %s | %s | %s | %s | %s | %s", "  #", "ID", "END", "TIP", "MEC", "ROT", "ESC", "CAT", "NPAR", "LPAR");
         for(i = 0; i < pos_tab ; i++){
+
+
             printf("\n%3d |%30s | %3d | %3d | %3d | %3d | %3c | %3c | %3d  | ",TabSimb[i].hash, TabSimb[i].id, TabSimb[i].endereco, TabSimb[i].tipo, TabSimb[i].mecanismo, TabSimb[i].rotulo, TabSimb[i].escopo, TabSimb[i].cat, TabSimb[i].npar);
             if(TabSimb[i].listapar != NULL){
                 mostra_lista(TabSimb[i].listapar);
