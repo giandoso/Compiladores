@@ -1,3 +1,13 @@
+/*+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
+| UNIFAL − Universidade Federal de Alfenas
+| BACHARELADO EM CIÊNCIAS DA COMPUTAÇÃO  
+| Trabalho . . . : Compilador Simples − Funcao
+| Disciplina  . .: Teoria de Linguagens e Compiladores
+| Professor .  . : Luiz Eduardo da Silva
+| Aluno . . . .. : João Pedro Giandoso
+| Data . .  .. . : 30/03/2021
++−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−*/
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
