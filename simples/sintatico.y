@@ -16,6 +16,7 @@ void verifica_tipo_INT();
 void verifica_tipo_LOG();
 int popula_deslocamento();
 void remove_variaveis_locais(int, int);
+int busca_hash(int);
 void mostra_lista(PtNo);
 PtNo insere(PtNo, int, int);
 
@@ -35,6 +36,7 @@ int categoria;
 int npar;
 int nvar_g;
 int nvar_l;
+int nargs;
 PtNo parametros = NULL;
 
 int ehVariavel;
@@ -123,7 +125,7 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      elem_tab.hash = conta;
                      elem_tab.endereco = escopo == 'G' ? nvar_g : nvar_l;
                      elem_tab.tipo = tipo;
-                     elem_tab.mecanismo = -1;
+                     elem_tab.mecanismo = 10;
                      elem_tab.rotulo = -1;
                      elem_tab.escopo = escopo;
                      elem_tab.cat = categoria;
@@ -139,7 +141,7 @@ lista_variaveis: lista_variaveis T_IDENTIF
                      elem_tab.hash = conta;
                      elem_tab.endereco = escopo == 'G' ? nvar_g : nvar_l;
                      elem_tab.tipo = tipo;
-                     elem_tab.mecanismo = -1;
+                     elem_tab.mecanismo = 10;
                      elem_tab.rotulo = -1;
                      elem_tab.escopo = escopo;
                      elem_tab.cat = categoria;
@@ -168,14 +170,12 @@ funcao: T_FUNC tipo identificador
            elem_tab.hash = conta;
            elem_tab.endereco = conta;
            elem_tab.tipo = tipo;
-           elem_tab.mecanismo = -1;
+           elem_tab.mecanismo = 10;
            elem_tab.rotulo = rotulo;
            elem_tab.escopo = escopo;
            elem_tab.cat = categoria;
            elem_tab.npar = 0; 
            insere_simbolo(elem_tab);
-           puts("funcao");
-         //   mostra_tabela();
            log_("ENSP", IntToString(rotulo));
            empilha(rotulo, 'r');
            conta++;
@@ -240,12 +240,12 @@ entrada_saida: leitura
 
 identificador: T_IDENTIF
                {
-                  //int i = busca_simbolo(atomo);
-                  //if( i== -1 )
+                  // int i = busca_simbolo(atomo, escopo);
+                  // if( i== -1 )
                   //   msg("Identificador desconhecido!");
-                  //empilha(i, 'i'); 
-                  // empilhar a posição do id na tabsimb
-                  //empilha(TabSimb[i].endereco, 'e');
+                  // empilha(i, 'i'); 
+                  // // empilhar a posição do id na tabsimb
+                  // empilha(TabSimb[i].endereco, 'e');
                };
 
 leitura: T_LEIA T_IDENTIF           
@@ -349,7 +349,7 @@ atribuicao: T_IDENTIF
                int end = desempilha();
                int pos = busca_hash(end);
                
-               // printf(" Debug Atribuição | Atomo = %s | ESC = %c | CAT = %s", atomo, TabSimb[pos].cat, TabSimb[pos].cat);
+               printf(" Debug Atribuição | Atomo = %s | ESC = %c | CAT = %d", atomo, TabSimb[pos].escopo, TabSimb[pos].cat);
                
                if(TabSimb[pos].cat == 'P' && TabSimb[pos].mecanismo == REF)
                   // gerar ARMI se a atribuicao eh um parametro por referencia
@@ -379,6 +379,29 @@ chamada_funcao:   identificador T_ABRE
                   // { printf("\nDebug chamada função  %s %c\n", atomo, escopo); }
                   T_FECHA
                   {
+                     int i = 0;
+                     printf("DEBUG VERIFICAÇÂO ARGS: %d", nargs);
+
+                     int aux[nargs];
+                     for(i=0; i <= nargs; i++){
+                        int r = desempilha();
+                        int pos = busca_hash(r);
+                        char mec = desempilha();
+                        int tipo_par = desempilha();
+                        int tipo_var = desempilha();
+                        aux[i] = tipo;
+                        // printf("DEBUG VERIFICAÇÂO XPCT | MEC=%d | Tip=%d\n", TabSimb[pos].mecanismo,TabSimb[pos].tipo);
+                        // printf("DEBUG VERIFICAÇÂO CALC | MEC=%d | Tip=%d", mec, tipo);
+
+                        if(tipo_par != tipo_var){
+                           msg("Argumento invalido!");
+                        }
+                        if(pos == -1)
+                           msg("Variável não declarada");
+                     }
+                     for(i=0; i<= nargs; i++){
+                        empilha(aux[i], 't');
+                     }
                      int r = desempilha();
                      log_("SVCP", "");
                      log_("DSVS", IntToString(r));
@@ -400,6 +423,13 @@ lista_argumentos: lista_argumentos argumento
                 | 
                 { printf("\nDebug argumentos>lista_argumentos>arg %s %c\n", atomo, escopo); 
                   mostra_lista(parametros);
+                  int pos = busca_simbolo(atomo, escopo);
+                  empilha(TabSimb[pos].tipo, 't');
+                  empilha(parametros->tipo, 't');
+                  empilha(parametros->mec, 'm');
+                  if(pos == -1)
+                        msg("Variável não declada!");
+                  empilha(pos, 'r');
                   parametros = parametros->prox == NULL ? parametros : parametros->prox;
                 };
 
@@ -407,7 +437,18 @@ argumento: expressao
          {
             printf("\nDebug argumentos>expressão %s %c\n", atomo, escopo);
             mostra_lista(parametros);
+            empilha(parametros->tipo, 't');
+            empilha(parametros->mec, 'm');
+
+
+            int pos = busca_simbolo(atomo, escopo);
+            if(pos == -1)
+                  msg("Variável não declada!");
+            
+            empilha(pos, 'r');
             parametros = parametros->prox == NULL ? parametros : parametros->prox;
+            nargs++;
+
             // ehVariavel é para decidir se um parâmetro por referência está recebendo uma variável.
             // ehReferencia é para sinalizar que o parâmetro correspondente ao argumento é por referência
             // TODO: comparar tipo e categoria do argumento com o parametro
@@ -469,7 +510,7 @@ termo: identificador
                   empilha(TabSimb[pos].tipo, 't');
                }else if(TabSimb[pos].escopo == 'L' && TabSimb[pos].mecanismo == VAL){
                   // gerar CRVL - Se a variavel é local e a passagem por valor ou 
-                  //            - Se a variavel é por referencia e a passagem por referencia (TODO: ?)
+                  //            - Se a variavel é por referencia e a passagem por referencia
                   //              Acessando argumento por valor
                   log_("CRVL", IntToString(TabSimb[pos].endereco));
                   empilha(TabSimb[pos].tipo, 't');

@@ -2,7 +2,7 @@ programa testafuncao1
   inteiro x y z
   logico a b c
 
-  func inteiro fazer (inteiro x ref inteiro y)
+  func inteiro fazer (inteiro x ref inteiro y ref inteiro z)
     inteiro a b
     logico c d
     inteiro g
@@ -13,21 +13,8 @@ programa testafuncao1
      fimse
   fimfunc
 
-  func logico maiorvalor (logico a ref inteiro b ref logico c ref logico d)
-    inteiro x y z
-  inicio
-     maiorvalor <- a > b
-     c <- V
-     d <- F
-  fimfunc
-
 inicio
   leia x
   y <- 10
-  escreva fazer(x y)
-  a <- maiorvalor (x y b c)
-  se a e b e nao c
-     entao escreva 100
-     senao escreva 200
-  fimse
+  escreva fazer(x y z)
 fimprograma

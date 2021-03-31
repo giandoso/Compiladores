@@ -4,7 +4,7 @@ programa referencia
    func logico muda (ref inteiro a)
    inicio
       se a > 10
-         entao a <- 2 * a
+         entao a <- (2 * a)
                muda <- V
          senao muda <- F 
       fimse

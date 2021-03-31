@@ -29,5 +29,4 @@ int desempilha(){
     }
     mostra_pilha("Desempilha antes");
     return Pilha[topo--].valor;
-    mostra_pilha("Desempilha depois");
 }

@@ -4,7 +4,7 @@
 struct{
     int valor;
     char tipo;
-}Pilha[TAM_PIL];
+}Pilha[TAM_PIL], Aux[TAM_PIL];
 
 typedef struct no{
     int tipo;

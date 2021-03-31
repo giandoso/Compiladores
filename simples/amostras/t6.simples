@@ -1,15 +1,15 @@
 programa testafatorial
-  inteiro n
-  inteiro a
+  inteiro n 
 
-  func inteiro fatorial (inteiro n)
-    inteiro k
-    inteiro x
+  func inteiro fatorial (inteiro n )
   inicio
+     se (n = 0)
+        entao fatorial <- 1
+        senao fatorial <- n * fatorial (n - 1)
+     fimse
   fimfunc
 
 inicio
   leia n
-  escreva fatorial(n a)
+  escreva fatorial (n)
 fimprograma
-
